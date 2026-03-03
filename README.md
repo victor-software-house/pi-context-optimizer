@@ -2,7 +2,7 @@
 
 > RTK command rewriting and tool output compaction extension for the Pi coding agent.
 
-![background](asset/pi-rtk-optimizer-background.png)
+![background](https://raw.githubusercontent.com/MasuRii/pi-rtk-optimizer/main/asset/pi-rtk-optimizer-background.png)
 
 **pi-rtk-optimizer** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
 
