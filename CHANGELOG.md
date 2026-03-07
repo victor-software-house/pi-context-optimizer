@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-03-07
+
+### Added
+- Added rewrite bypass rules for structured `gh` output commands and non-interactive container shell sessions.
+- Added dedicated runtime guard helpers and test coverage for rewrite-mode availability behavior.
+- Added repository lockfile plus additional command rewriter and runtime guard tests.
+
+### Changed
+- Updated README documentation to reflect rewrite bypass behavior, runtime guard semantics, source filtering details, and expanded development verification commands.
+- Added a dedicated `typecheck` script and expanded `check` to run typecheck plus the full test suite.
+- Routed `pnpm dlx` commands through the RTK proxy path instead of the generic pnpm wrapper.
+
+### Fixed
+- Improved command tokenization so `sed` scripts, shell separators, redirects, and background operators do not break later rewrites.
+- Preserved exact `read` output at the 80-line smart-truncation threshold instead of compacting boundary-sized results.
+- Preserved userscript metadata blocks during source filtering.
+- Limited RTK-missing command suppression to rewrite mode so suggest mode still produces guidance.
+
 ## [0.3.2] - 2026-03-04
 
 ### Fixed

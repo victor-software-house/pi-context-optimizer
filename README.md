@@ -21,7 +21,9 @@
   - **Containers** — `docker`, `docker-compose`, `podman` commands
   - **Network** — `curl`, `wget` commands
   - **Package Managers** — `apt`, `brew`, `dnf`, `pacman`, `yum` commands
-- Runtime guard when `rtk` binary is unavailable (falls back to original commands)
+- Runtime guard when `rtk` binary is unavailable (falls back to original commands only in rewrite mode)
+- Safe rewrite bypasses for structured `gh` output commands and non-interactive container shell sessions
+- Improved command parsing for `sed`, shell separators, and `pnpm dlx` proxy rewrites
 
 ### Output Compaction Pipeline
 
@@ -35,8 +37,8 @@ Multi-stage pipeline to reduce token consumption:
 | Git Compaction | Condenses `git status`, `git log`, `git diff` output |
 | Linter Aggregation | Summarizes linting tool output |
 | Search Grouping | Groups `grep`/`rg` results by file |
-| Source Code Filtering | `none`, `minimal`, or `aggressive` comment/whitespace removal |
-| Smart Truncation | Preserves file boundaries and important lines |
+| Source Code Filtering | `none`, `minimal`, or `aggressive` comment/whitespace removal with userscript metadata preservation |
+| Smart Truncation | Preserves file boundaries and important lines while keeping 80-line reads exact |
 | Hard Truncation | Final character limit enforcement |
 
 ### Interactive Settings
@@ -220,7 +222,9 @@ src/
 ├── config-store.ts         # Config load/save with normalization
 ├── config-modal.ts         # TUI settings modal and /rtk handler
 ├── command-rewriter.ts     # Command tokenization and rewrite logic
+├── rewrite-bypass.ts       # Rewrite safety bypass rules for interactive/structured commands
 ├── rewrite-rules.ts        # Rewrite rule catalog
+├── runtime-guard.ts        # Runtime availability guard helpers for rewrite mode
 ├── output-compactor.ts     # Tool result compaction pipeline
 ├── output-metrics.ts       # Savings tracking and reporting
 ├── command-completions.ts  # /rtk subcommand completions
@@ -259,17 +263,20 @@ Automatic fixes applied on Windows:
 ## Development
 
 ```bash
-# Build (TypeScript compilation)
+# Build
 npm run build
 
-# Lint
-npm run lint
+# Full typecheck
+npm run typecheck
 
 # Run tests
 npm run test
 
-# Full check (lint + test)
+# Full verification
 npm run check
+
+# Bundle sanity check
+npm run build:check
 ```
 
 ## Credits
