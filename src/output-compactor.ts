@@ -103,7 +103,13 @@ function countLines(text: string): number {
 	if (!text) {
 		return 0;
 	}
-	return text.split("\n").length;
+
+	const normalized = text.endsWith("\n") ? text.slice(0, -1) : text;
+	if (!normalized) {
+		return 1;
+	}
+
+	return normalized.split("\n").length;
 }
 
 function hasLossyCompaction(techniques: string[]): boolean {

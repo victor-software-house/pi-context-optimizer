@@ -66,9 +66,32 @@ export function filterMinimal(content: string, language: Language): string {
 	const result: string[] = [];
 	let inBlockComment = false;
 	let inDocstring = false;
+	let inUserscriptMetadataBlock = false;
+	const userscriptMetadataStartPattern = /^\/\/\s*==\s*userscript\s*==$/i;
+	const userscriptMetadataContentPattern = /^\/\/\s*@\w+/;
+	const userscriptMetadataEndPattern = /^\/\/\s*==\s*\/userscript\s*==$/i;
 
 	for (const line of lines) {
 		const trimmed = line.trim();
+		const isUserscriptMetadataStart = userscriptMetadataStartPattern.test(trimmed);
+		const isUserscriptMetadataContent = userscriptMetadataContentPattern.test(trimmed);
+		const isUserscriptMetadataEnd = userscriptMetadataEndPattern.test(trimmed);
+
+		if (isUserscriptMetadataStart) {
+			inUserscriptMetadataBlock = true;
+			result.push(line);
+			continue;
+		}
+
+		if (inUserscriptMetadataBlock) {
+			result.push(line);
+			if (isUserscriptMetadataEnd) {
+				inUserscriptMetadataBlock = false;
+			} else if (isUserscriptMetadataContent) {
+				// Preserve metadata key/value lines (e.g. // @name) within the userscript block.
+			}
+			continue;
+		}
 
 		if (patterns.blockStart && patterns.blockEnd) {
 			if (
