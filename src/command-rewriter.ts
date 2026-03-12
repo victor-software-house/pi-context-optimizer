@@ -1,4 +1,4 @@
-import { shouldBypassRewriteForCommand } from "./rewrite-bypass.js";
+import { shouldBypassRewriteForCommand, shouldBypassWholeCommandRewrite } from "./rewrite-bypass.js";
 import { RTK_REWRITE_RULES, type RtkRewriteCategory, type RtkRewriteRule } from "./rewrite-rules.js";
 import type { RtkIntegrationConfig } from "./types.js";
 
@@ -510,6 +510,15 @@ export function computeRewriteDecision(command: string, config: RtkIntegrationCo
 			originalCommand: original,
 			rewrittenCommand: original,
 			reason: "heredoc",
+		};
+	}
+
+	if (!isAlreadyRtkCommand(command) && shouldBypassWholeCommandRewrite(command)) {
+		return {
+			changed: false,
+			originalCommand: original,
+			rewrittenCommand: original,
+			reason: "no_match",
 		};
 	}
 

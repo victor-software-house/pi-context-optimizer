@@ -1,18 +1,9 @@
+import { compactPath } from "./path-utils.js";
+
 interface SearchResult {
 	file: string;
 	lineNumber: string;
 	content: string;
-}
-
-function compactPath(path: string, maxLength: number): string {
-	if (path.length <= maxLength) {
-		return path;
-	}
-	const parts = path.split("/");
-	if (parts.length <= 3) {
-		return path;
-	}
-	return `${parts[0]}/.../${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
 }
 
 export function groupSearchResults(output: string, maxResults = 50): string | null {
@@ -43,7 +34,7 @@ export function groupSearchResults(output: string, maxResults = 50): string | nu
 		byFile.set(result.file, existing);
 	}
 
-	let outputText = `🔍 ${results.length} matches in ${byFile.size} files:\n\n`;
+	let outputText = `${results.length} matches in ${byFile.size} files:\n\n`;
 	const sortedFiles = Array.from(byFile.entries()).sort((left, right) =>
 		left[0].localeCompare(right[0]),
 	);
@@ -53,7 +44,7 @@ export function groupSearchResults(output: string, maxResults = 50): string | nu
 		if (shown >= maxResults) {
 			break;
 		}
-		outputText += `📄 ${compactPath(file, 50)} (${matches.length} matches):\n`;
+		outputText += `> ${compactPath(file, 50)} (${matches.length} matches):\n`;
 		for (const match of matches.slice(0, 10)) {
 			let cleaned = match.content.trim();
 			if (cleaned.length > 70) {

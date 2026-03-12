@@ -1,5 +1,6 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
 import type { SettingItem } from "@mariozechner/pi-tui";
+import { toOnOff } from "./boolean-format.js";
 import { ZellijModal, ZellijSettingsModal } from "./zellij-modal.js";
 import { getRtkArgumentCompletions } from "./command-completions.js";
 import {
@@ -30,10 +31,6 @@ const TRUNCATE_MAX_CHAR_VALUES = ["4000", "8000", "12000", "20000", "50000", "10
 const SMART_TRUNCATE_LINE_VALUES = ["40", "80", "120", "160", "220", "320", "500", "1000", "2000", "4000"];
 const RTK_USAGE_TEXT =
 	"Usage: /rtk [show|path|verify|stats|clear-stats|reset|help] (or run /rtk with no args to open settings modal)";
-
-function toOnOff(value: boolean): string {
-	return value ? "on" : "off";
-}
 
 function parseSourceFilterLevel(
 	value: string,
@@ -75,7 +72,7 @@ function summarizeConfig(config: RtkIntegrationConfig, runtimeStatus: RuntimeSta
 		? "rtk=available"
 		: `rtk=missing${runtimeStatus.lastError ? ` (${runtimeStatus.lastError})` : ""}`;
 
-	return `enabled=${config.enabled}, mode=${config.mode}, rewriteNotice=${config.showRewriteNotifications}, compaction=${config.outputCompaction.enabled}, sourceFilterEnabled=${config.outputCompaction.sourceCodeFilteringEnabled}, sourceFilter=${config.outputCompaction.sourceCodeFiltering}, categories=[${categories || "none"}], ${runtime}`;
+	return `enabled=${config.enabled}, mode=${config.mode}, rewriteNotice=${config.showRewriteNotifications}, compaction=${config.outputCompaction.enabled}, sourceFilterEnabled=${config.outputCompaction.sourceCodeFilteringEnabled}, preserveSkillReads=${config.outputCompaction.preserveExactSkillReads}, sourceFilter=${config.outputCompaction.sourceCodeFiltering}, categories=[${categories || "none"}], ${runtime}`;
 }
 
 function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
@@ -141,6 +138,13 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 			label: "Read source filtering enabled",
 			description: "If off, read output skips source-code filtering regardless of selected level",
 			currentValue: toOnOff(config.outputCompaction.sourceCodeFilteringEnabled),
+			values: ON_OFF,
+		},
+		{
+			id: "outputPreserveExactSkillReads",
+			label: "Preserve exact skill reads",
+			description: "If on, read results under ~/.pi/agent/skills, ~/.agents/skills, .pi/skills, and ancestor .agents/skills skip read compaction",
+			currentValue: toOnOff(config.outputCompaction.preserveExactSkillReads),
 			values: ON_OFF,
 		},
 		{
@@ -324,6 +328,14 @@ function applySetting(config: RtkIntegrationConfig, id: string, value: string): 
 					sourceCodeFilteringEnabled: value === "on",
 				},
 			};
+		case "outputPreserveExactSkillReads":
+			return {
+				...config,
+				outputCompaction: {
+					...config.outputCompaction,
+					preserveExactSkillReads: value === "on",
+				},
+			};
 		case "outputSourceFiltering": {
 			const parsedValue = parseSourceFilterLevel(value);
 			return {
@@ -439,6 +451,7 @@ function syncSettingValues(settingsList: SettingValueSyncTarget, config: RtkInte
 	settingsList.updateValue("outputTruncateEnabled", toOnOff(config.outputCompaction.truncate.enabled));
 	settingsList.updateValue("outputTruncateMaxChars", String(config.outputCompaction.truncate.maxChars));
 	settingsList.updateValue("outputSourceFilteringEnabled", toOnOff(config.outputCompaction.sourceCodeFilteringEnabled));
+	settingsList.updateValue("outputPreserveExactSkillReads", toOnOff(config.outputCompaction.preserveExactSkillReads));
 	settingsList.updateValue("outputSourceFiltering", config.outputCompaction.sourceCodeFiltering);
 	settingsList.updateValue("outputSmartTruncate", toOnOff(config.outputCompaction.smartTruncate.enabled));
 	settingsList.updateValue("outputSmartTruncateMaxLines", String(config.outputCompaction.smartTruncate.maxLines));

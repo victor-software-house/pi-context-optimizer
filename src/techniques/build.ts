@@ -129,13 +129,13 @@ export function filterBuildOutput(output: string, command: string | undefined | 
 	}
 
 	if (stats.errors.length === 0 && stats.warnings.length === 0) {
-		return `✓ Build successful (${stats.compiled} units compiled)`;
+		return `[OK] Build successful (${stats.compiled} units compiled)`;
 	}
 
 	const result: string[] = [];
 
 	if (stats.errors.length > 0) {
-		result.push(`❌ ${stats.errors.length} error(s):`);
+		result.push(`[ERROR] ${stats.errors.length} error(s):`);
 		for (const error of stats.errors.slice(0, 5)) {
 			result.push(...error.slice(0, 10));
 			if (error.length > 10) {
@@ -148,7 +148,7 @@ export function filterBuildOutput(output: string, command: string | undefined | 
 	}
 
 	if (stats.warnings.length > 0) {
-		result.push(`\n⚠️  ${stats.warnings.length} warning(s)`);
+		result.push(`\n[WARN] ${stats.warnings.length} warning(s)`);
 	}
 
 	return result.join("\n");

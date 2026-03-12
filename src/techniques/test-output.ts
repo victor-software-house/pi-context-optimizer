@@ -139,13 +139,13 @@ export function aggregateTestOutput(output: string, command: string | undefined 
 		}
 	}
 
-	const result: string[] = ["📋 Test Results:"];
-	result.push(`   ✅ ${summary.passed} passed`);
+	const result: string[] = ["Test Results:"];
+	result.push(`   PASS: ${summary.passed} passed`);
 	if (summary.failed > 0) {
-		result.push(`   ❌ ${summary.failed} failed`);
+		result.push(`   FAIL: ${summary.failed} failed`);
 	}
 	if (summary.skipped > 0) {
-		result.push(`   ⏭️  ${summary.skipped} skipped`);
+		result.push(`   SKIP: ${summary.skipped} skipped`);
 	}
 
 	if (summary.failed > 0 && summary.failures.length > 0) {
@@ -153,7 +153,7 @@ export function aggregateTestOutput(output: string, command: string | undefined 
 		for (const failure of summary.failures.slice(0, 5)) {
 			const failureLines = failure.split("\n");
 			const firstLine = failureLines[0] ?? "";
-			result.push(`   • ${firstLine.slice(0, 70)}${firstLine.length > 70 ? "..." : ""}`);
+			result.push(`   - ${firstLine.slice(0, 70)}${firstLine.length > 70 ? "..." : ""}`);
 			for (const detailLine of failureLines.slice(1, 4)) {
 				if (detailLine.trim()) {
 					result.push(`     ${detailLine.slice(0, 65)}${detailLine.length > 65 ? "..." : ""}`);

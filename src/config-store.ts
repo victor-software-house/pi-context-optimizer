@@ -97,6 +97,10 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 				outputCompactionSource.sourceCodeFilteringEnabled,
 				DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction.sourceCodeFilteringEnabled,
 			),
+			preserveExactSkillReads: toBoolean(
+				outputCompactionSource.preserveExactSkillReads,
+				DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction.preserveExactSkillReads,
+			),
 			truncate: {
 				enabled: toBoolean(
 					truncateSource.enabled,
@@ -150,50 +154,53 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 	};
 }
 
-export function ensureConfigExists(): EnsureConfigResult {
-	if (existsSync(CONFIG_PATH)) {
+export function ensureConfigExists(configPath = CONFIG_PATH): EnsureConfigResult {
+	if (existsSync(configPath)) {
 		return { created: false };
 	}
 
 	try {
-		mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-		writeFileSync(CONFIG_PATH, `${JSON.stringify(DEFAULT_RTK_INTEGRATION_CONFIG, null, 2)}\n`, "utf-8");
+		mkdirSync(dirname(configPath), { recursive: true });
+		writeFileSync(configPath, `${JSON.stringify(DEFAULT_RTK_INTEGRATION_CONFIG, null, 2)}\n`, "utf-8");
 		return { created: true };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		return {
 			created: false,
-			error: `Failed to create ${CONFIG_PATH}: ${message}`,
+			error: `Failed to create ${configPath}: ${message}`,
 		};
 	}
 }
 
-export function loadRtkIntegrationConfig(): ConfigLoadResult {
-	if (!existsSync(CONFIG_PATH)) {
+export function loadRtkIntegrationConfig(configPath = CONFIG_PATH): ConfigLoadResult {
+	if (!existsSync(configPath)) {
 		return { config: { ...DEFAULT_RTK_INTEGRATION_CONFIG } };
 	}
 
 	try {
-		const rawText = readFileSync(CONFIG_PATH, "utf-8");
+		const rawText = readFileSync(configPath, "utf-8");
 		const parsed = JSON.parse(rawText) as unknown;
 		return { config: normalizeRtkIntegrationConfig(parsed) };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		return {
 			config: { ...DEFAULT_RTK_INTEGRATION_CONFIG },
-			warning: `Failed to parse ${CONFIG_PATH}: ${message}`,
+			warning: `Failed to parse ${configPath}: ${message}`,
 		};
 	}
 }
 
-export function saveRtkIntegrationConfig(config: RtkIntegrationConfig): ConfigSaveResult {
+export function saveRtkIntegrationConfig(
+	config: RtkIntegrationConfig,
+	configPath = CONFIG_PATH,
+): ConfigSaveResult {
 	const normalized = normalizeRtkIntegrationConfig(config);
-	const tmpPath = `${CONFIG_PATH}.tmp`;
+	const tmpPath = `${configPath}.tmp`;
 
 	try {
-		mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+		mkdirSync(dirname(configPath), { recursive: true });
 		writeFileSync(tmpPath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");
-		renameSync(tmpPath, CONFIG_PATH);
+		renameSync(tmpPath, configPath);
 		return { success: true };
 	} catch (error) {
 		try {
@@ -207,11 +214,11 @@ export function saveRtkIntegrationConfig(config: RtkIntegrationConfig): ConfigSa
 		const message = error instanceof Error ? error.message : String(error);
 		return {
 			success: false,
-			error: `Failed to save ${CONFIG_PATH}: ${message}`,
+			error: `Failed to save ${configPath}: ${message}`,
 		};
 	}
 }
 
-export function getRtkIntegrationConfigPath(): string {
-	return CONFIG_PATH;
+export function getRtkIntegrationConfigPath(configPath = CONFIG_PATH): string {
+	return configPath;
 }

@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { dirname, join, resolve, sep } from "node:path";
 import {
 	aggregateLinterOutput,
 	aggregateTestOutput,
@@ -11,6 +13,7 @@ import {
 	truncate,
 } from "./techniques/index.js";
 import { trackOutputSavings } from "./output-metrics.js";
+import { toRecord } from "./record-utils.js";
 import type { RtkIntegrationConfig } from "./types.js";
 
 interface ContentBlock {
@@ -55,12 +58,54 @@ const LOSSY_TECHNIQUE_PREFIXES = [
 
 const READ_EXACT_OUTPUT_LINE_THRESHOLD = 80;
 const READ_COMPACTION_BANNER_PREFIX = "[RTK compacted output:";
+const USER_SKILL_ROOTS = [join(homedir(), ".pi", "agent", "skills"), join(homedir(), ".agents", "skills")];
 
-function toRecord(value: unknown): Record<string, unknown> {
-	if (!value || typeof value !== "object" || Array.isArray(value)) {
-		return {};
+function normalizePathForComparison(path: string): string {
+	return process.platform === "win32" ? path.toLowerCase() : path;
+}
+
+function isPathUnderRoot(targetPath: string, rootPath: string): boolean {
+	const normalizedTarget = normalizePathForComparison(resolve(targetPath));
+	const normalizedRoot = normalizePathForComparison(resolve(rootPath));
+	if (normalizedTarget === normalizedRoot) {
+		return true;
 	}
-	return value as Record<string, unknown>;
+
+	const rootWithSeparator = normalizedRoot.endsWith(sep) ? normalizedRoot : `${normalizedRoot}${sep}`;
+	return normalizedTarget.startsWith(rootWithSeparator);
+}
+
+function isUnderAnyAncestorAgentsSkills(targetPath: string): boolean {
+	let currentDir = resolve(process.cwd());
+	while (true) {
+		if (isPathUnderRoot(targetPath, join(currentDir, ".agents", "skills"))) {
+			return true;
+		}
+
+		const parentDir = dirname(currentDir);
+		if (parentDir === currentDir) {
+			return false;
+		}
+
+		currentDir = parentDir;
+	}
+}
+
+function isSkillReadPath(filePath: string): boolean {
+	if (!filePath.trim()) {
+		return false;
+	}
+
+	const resolvedPath = resolve(filePath);
+	if (USER_SKILL_ROOTS.some((root) => isPathUnderRoot(resolvedPath, root))) {
+		return true;
+	}
+
+	if (isPathUnderRoot(resolvedPath, join(process.cwd(), ".pi", "skills"))) {
+		return true;
+	}
+
+	return isUnderAnyAncestorAgentsSkills(resolvedPath);
 }
 
 function toArray(value: unknown): unknown[] {
@@ -87,12 +132,30 @@ function hasExplicitReadRange(input: Record<string, unknown>): boolean {
 	return input.offset !== undefined || input.limit !== undefined;
 }
 
-function shouldPreserveExactReadOutput(text: string, input: Record<string, unknown>): boolean {
+function shouldPreserveExactReadOutput(
+	text: string,
+	input: Record<string, unknown>,
+	config: RtkIntegrationConfig,
+): boolean {
 	if (hasExplicitReadRange(input)) {
 		return true;
 	}
 
+	if (config.outputCompaction.preserveExactSkillReads && isSkillReadPath(normalizePath(input))) {
+		return true;
+	}
+
 	return countLines(text) <= READ_EXACT_OUTPUT_LINE_THRESHOLD;
+}
+
+function shouldApplyReadSourceFiltering(text: string, config: RtkIntegrationConfig): boolean {
+	const compaction = config.outputCompaction;
+	const lineCount = countLines(text);
+
+	return (
+		(compaction.smartTruncate.enabled && lineCount > compaction.smartTruncate.maxLines) ||
+		(compaction.truncate.enabled && text.length > compaction.truncate.maxChars)
+	);
 }
 
 function formatReadCompactionBanner(techniques: string[]): string {
@@ -200,7 +263,12 @@ function compactReadText(
 	}
 
 	const language = detectLanguage(filePath);
-	if (compaction.sourceCodeFilteringEnabled && compaction.sourceCodeFiltering !== "none") {
+	// Only apply lossy source filtering when a downstream line/char safeguard would otherwise trigger.
+	if (
+		compaction.sourceCodeFilteringEnabled &&
+		compaction.sourceCodeFiltering !== "none" &&
+		shouldApplyReadSourceFiltering(text, config)
+	) {
 		const filtered = filterSourceCode(nextText, language, compaction.sourceCodeFiltering);
 		if (filtered !== nextText) {
 			nextText = filtered;
@@ -293,11 +361,12 @@ export function compactToolResult(
 		if (event.toolName === "bash") {
 			transformed = compactBashText(contentBlock.text, normalizeCommand(input), config);
 		} else if (event.toolName === "read") {
+			const normalizedPath = normalizePath(input);
 			transformed = compactReadText(
 				contentBlock.text,
-				normalizePath(input),
+				normalizedPath,
 				config,
-				shouldPreserveExactReadOutput(contentBlock.text, input),
+				shouldPreserveExactReadOutput(contentBlock.text, input, config),
 			);
 		} else if (event.toolName === "grep") {
 			transformed = compactGrepText(contentBlock.text, config);

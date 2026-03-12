@@ -11,6 +11,8 @@ import { registerRtkIntegrationCommand } from "./config-modal.js";
 import { EXTENSION_NAME } from "./constants.js";
 import { clearOutputMetrics, getOutputMetricsSummary } from "./output-metrics.js";
 import { compactToolResult, type ToolResultCompactionMetadata } from "./output-compactor.js";
+import { toRecord } from "./record-utils.js";
+import { applyRewrittenCommandShellSafetyFixups } from "./rewrite-pipeline-safety.js";
 import { shouldRequireRtkAvailabilityForCommandHandling, shouldSkipCommandHandlingWhenRtkMissing } from "./runtime-guard.js";
 import type { RtkIntegrationConfig, RuntimeStatus } from "./types.js";
 import { applyWindowsBashCompatibilityFixes } from "./windows-command-helpers.js";
@@ -25,13 +27,6 @@ function trimMessage(raw: string, maxLength = 220): string {
 
 const SOURCE_FILTER_TROUBLESHOOTING_NOTE =
 	"RTK note: If file edits repeatedly fail because old text does not match, run '/rtk', turn off 'Read source filtering enabled', re-read the file, apply the edit, then turn it back on.";
-
-function toRecord(value: unknown): Record<string, unknown> {
-	if (!value || typeof value !== "object" || Array.isArray(value)) {
-		return {};
-	}
-	return value as Record<string, unknown>;
-}
 
 function mergeCompactionDetails(
 	existingDetails: unknown,
@@ -56,13 +51,47 @@ function mergeCompactionDetails(
 	return nextDetails;
 }
 
+export interface BoundedNoticeTracker {
+	remember(key: string): boolean;
+	reset(): void;
+}
+
+export function createBoundedNoticeTracker(maxEntries: number): BoundedNoticeTracker {
+	const normalizedLimit = Math.max(1, Math.floor(maxEntries));
+	const seen = new Set<string>();
+	const order: string[] = [];
+
+	return {
+		remember(key: string): boolean {
+			if (seen.has(key)) {
+				return false;
+			}
+
+			seen.add(key);
+			order.push(key);
+			while (order.length > normalizedLimit) {
+				const evicted = order.shift();
+				if (evicted !== undefined) {
+					seen.delete(evicted);
+				}
+			}
+
+			return true;
+		},
+		reset(): void {
+			seen.clear();
+			order.length = 0;
+		},
+	};
+}
+
 export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 	const initialLoad = loadRtkIntegrationConfig();
 	let config: RtkIntegrationConfig = initialLoad.config;
 	let pendingLoadWarning = initialLoad.warning;
 	let runtimeStatus: RuntimeStatus = { rtkAvailable: false };
-	const warnedMessages = new Set<string>();
-	const suggestionNotices = new Set<string>();
+	const warnedMessages = createBoundedNoticeTracker(100);
+	const suggestionNotices = createBoundedNoticeTracker(200);
 	let missingRtkWarningShown = false;
 
 	const formatRewriteNotice = (originalCommand: string, rewrittenCommand: string): string => {
@@ -76,11 +105,10 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		message: string,
 		level: "warning" | "error" = "warning",
 	): void => {
-		if (warnedMessages.has(message)) {
+		if (!warnedMessages.remember(message)) {
 			return;
 		}
 
-		warnedMessages.add(message);
 		console.warn(`[${EXTENSION_NAME}] ${message}`);
 		if (ctx.hasUI) {
 			ctx.ui.notify(message, level);
@@ -188,11 +216,17 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 	registerRtkIntegrationCommand(pi, controller);
 
 	pi.on("session_start", async (_event, ctx) => {
+		warnedMessages.reset();
+		suggestionNotices.reset();
+		missingRtkWarningShown = false;
 		await refreshConfig(ctx);
 		maybeWarnRtkMissing(ctx);
 	});
 
 	pi.on("session_switch", async (_event, ctx) => {
+		warnedMessages.reset();
+		suggestionNotices.reset();
+		missingRtkWarningShown = false;
 		await refreshConfig(ctx);
 		maybeWarnRtkMissing(ctx);
 	});
@@ -240,17 +274,14 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 			if (config.showRewriteNotifications && ctx.hasUI) {
 				ctx.ui.notify(formatRewriteNotice(decision.originalCommand, decision.rewrittenCommand), "info");
 			}
-			event.input.command = decision.rewrittenCommand;
+			event.input.command = applyRewrittenCommandShellSafetyFixups(decision.rewrittenCommand);
 			return {};
 		}
 
 		if (config.mode === "suggest") {
 			const suggestionKey = `${decision.rule.id}:${decision.rewrittenCommand}`;
-			if (!suggestionNotices.has(suggestionKey)) {
-				suggestionNotices.add(suggestionKey);
-				if (ctx.hasUI) {
-					ctx.ui.notify(`RTK suggestion: ${decision.rewrittenCommand}`, "info");
-				}
+			if (suggestionNotices.remember(suggestionKey) && ctx.hasUI) {
+				ctx.ui.notify(`RTK suggestion: ${decision.rewrittenCommand}`, "info");
 			}
 		}
 

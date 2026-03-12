@@ -144,6 +144,7 @@ A starter template is included at `config/config.example.json`.
 | `outputCompaction.enabled` | boolean | `true` | Enable output compaction pipeline |
 | `outputCompaction.stripAnsi` | boolean | `true` | Remove ANSI escape codes |
 | `outputCompaction.sourceCodeFilteringEnabled` | boolean | `true` | Enable source code filtering for `read` output |
+| `outputCompaction.preserveExactSkillReads` | boolean | `false` | Keep reads under Pi skill directories exact, bypassing read compaction |
 | `outputCompaction.sourceCodeFiltering` | string | `"minimal"` | Filter level: `"none"`, `"minimal"`, `"aggressive"` |
 | `outputCompaction.aggregateTestOutput` | boolean | `true` | Summarize test runner output |
 | `outputCompaction.filterBuildOutput` | boolean | `true` | Filter build/compile output |
@@ -192,6 +193,7 @@ A starter template is included at `config/config.example.json`.
     "enabled": true,
     "stripAnsi": true,
     "sourceCodeFilteringEnabled": true,
+    "preserveExactSkillReads": false,
     "sourceCodeFiltering": "minimal",
     "aggregateTestOutput": true,
     "filterBuildOutput": true,

@@ -29,7 +29,7 @@ export function compactDiff(output: string, maxLines = 50): string {
 
 			const match = line.match(/diff --git a\/(.+) b\/(.+)/);
 			currentFile = match?.[2] ?? "unknown";
-			result.push(`\n📄 ${currentFile}`);
+			result.push(`\n> ${currentFile}`);
 			added = 0;
 			removed = 0;
 			inHunk = false;
@@ -147,10 +147,10 @@ export function compactStatus(output: string): string {
 		}
 	}
 
-	let result = `📌 ${branchName}\n`;
+	let result = `Branch: ${branchName}\n`;
 
 	if (stats.staged > 0) {
-		result += `✅ Staged: ${stats.staged} files\n`;
+		result += `Staged: ${stats.staged} files\n`;
 		for (const file of stats.stagedFiles.slice(0, 5)) {
 			result += `  ${file}\n`;
 		}
@@ -160,7 +160,7 @@ export function compactStatus(output: string): string {
 	}
 
 	if (stats.modified > 0) {
-		result += `📝 Modified: ${stats.modified} files\n`;
+		result += `Modified: ${stats.modified} files\n`;
 		for (const file of stats.modifiedFiles.slice(0, 5)) {
 			result += `  ${file}\n`;
 		}
@@ -170,7 +170,7 @@ export function compactStatus(output: string): string {
 	}
 
 	if (stats.untracked > 0) {
-		result += `❓ Untracked: ${stats.untracked} files\n`;
+		result += `Untracked: ${stats.untracked} files\n`;
 		for (const file of stats.untrackedFiles.slice(0, 3)) {
 			result += `  ${file}\n`;
 		}
@@ -180,7 +180,7 @@ export function compactStatus(output: string): string {
 	}
 
 	if (stats.conflicts > 0) {
-		result += `⚠️  Conflicts: ${stats.conflicts} files\n`;
+		result += `Conflicts: ${stats.conflicts} files\n`;
 	}
 
 	return result.trim();

@@ -186,9 +186,9 @@ export const RTK_REWRITE_RULES: RtkRewriteRule[] = [
 	{
 		id: "python-proxy",
 		category: "python",
-		matcher: /^python(?:3(?:\.\d+)?)?\s+(.+)$/,
-		replacement: "rtk proxy python $1",
-		description: "python fallback -> proxy",
+		matcher: /^(python(?:3(?:\.\d+)?)?)\s+(.+)$/,
+		replacement: "rtk proxy $1 $2",
+		description: "python fallback -> proxy while preserving executable token",
 	},
 	{ id: "poetry-proxy", category: "python", matcher: /^poetry\s+(.+)$/, replacement: "rtk proxy poetry $1", description: "poetry -> proxy" },
 

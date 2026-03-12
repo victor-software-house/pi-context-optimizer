@@ -159,6 +159,12 @@ declare module "node:assert/strict" {
 	export default assert;
 }
 
+declare module "bun:test" {
+	export const mock: {
+		module(specifier: string, factory: () => Record<string, unknown>): void;
+	};
+}
+
 declare const process: {
 	platform: string;
 	env: Record<string, string | undefined>;

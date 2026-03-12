@@ -16,6 +16,7 @@
     "enabled": true,
     "stripAnsi": true,
     "sourceCodeFilteringEnabled": true,
+    "preserveExactSkillReads": false,
     "truncate": {
       "enabled": true,
       "maxChars": 12000

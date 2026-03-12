@@ -3,6 +3,26 @@ import type { RtkRewriteRule } from "./rewrite-rules.js";
 const COMMAND_WORD_PATTERN = /"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|`(?:\\.|[^`])*`|[^\s]+/g;
 const BYPASSED_CARGO_SUBCOMMANDS = new Set(["help", "install", "publish"]);
 const GH_STRUCTURED_OUTPUT_FLAGS = ["--json", "--jq", "--template"] as const;
+const UNSAFE_COMPOUND_REWRITE_COMMANDS = new Set(["find", "grep", "rg", "ls"]);
+const BYPASSED_FIND_ACTIONS = new Set([
+	"-delete",
+	"-exec",
+	"-execdir",
+	"-fprint",
+	"-fprint0",
+	"-fprintf",
+	"-fls",
+	"-ls",
+	"-ok",
+	"-okdir",
+	"-print0",
+	"-printf",
+	"-prune",
+	"-quit",
+]);
+const BASH_INLINE_COMMAND_FLAGS = new Set(["-c", "-cl", "-lc", "--command"]);
+const POWERSHELL_INLINE_COMMAND_FLAGS = new Set(["-c", "-command", "-encodedcommand"]);
+const CMD_INLINE_COMMAND_FLAGS = new Set(["/c", "/k"]);
 const INTERACTIVE_CONTAINER_SHELLS = new Set([
 	"ash",
 	"bash",
@@ -19,6 +39,76 @@ const INTERACTIVE_CONTAINER_SHELLS = new Set([
 
 function splitCommandWords(commandBody: string): string[] {
 	return commandBody.match(COMMAND_WORD_PATTERN) ?? [];
+}
+
+function splitTopLevelCompoundSegments(command: string): string[] {
+	const segments: string[] = [];
+	let segmentStart = 0;
+	let quote: "'" | '"' | "`" | null = null;
+	let escaped = false;
+
+	const pushSegment = (endIndex: number): void => {
+		const segment = command.slice(segmentStart, endIndex).trim();
+		if (segment) {
+			segments.push(segment);
+		}
+	};
+
+	for (let index = 0; index < command.length; index += 1) {
+		const char = command[index] ?? "";
+		const nextChar = command[index + 1] ?? "";
+		const prevChar = index > 0 ? command[index - 1] ?? "" : "";
+
+		if (escaped) {
+			escaped = false;
+			continue;
+		}
+
+		if (quote !== null) {
+			if (char === "\\" && quote !== "'") {
+				escaped = true;
+				continue;
+			}
+			if (char === quote) {
+				quote = null;
+			}
+			continue;
+		}
+
+		if (char === "\\") {
+			escaped = true;
+			continue;
+		}
+
+		if (char === "'" || char === '"' || char === "`") {
+			quote = char;
+			continue;
+		}
+
+		let separatorLength = 0;
+		if ((char === "&" && nextChar === "&") || (char === "|" && nextChar === "|") || (char === "|" && nextChar === "&")) {
+			separatorLength = 2;
+		} else if (char === "|" && prevChar !== ">") {
+			separatorLength = 1;
+		} else if (char === "&" && nextChar !== ">" && prevChar !== ">" && prevChar !== "<") {
+			separatorLength = 1;
+		}
+
+		// Intentionally ignore semicolons here so unquoted sed scripts remain eligible for
+		// segment-level rewriting instead of being treated as unsafe compound shells.
+		if (separatorLength === 0) {
+			continue;
+		}
+
+		pushSegment(index);
+		segmentStart = index + separatorLength;
+		if (separatorLength === 2) {
+			index += 1;
+		}
+	}
+
+	pushSegment(command.length);
+	return segments;
 }
 
 function shouldBypassCargoRewrite(tokens: string[]): boolean {
@@ -148,6 +238,63 @@ function shouldBypassInteractiveContainerRewrite(tokens: string[]): boolean {
 	return false;
 }
 
+function shouldBypassFindRewrite(tokens: string[]): boolean {
+	return tokens.slice(1).some((token) => {
+		const normalized = token.toLowerCase();
+		return (
+			BYPASSED_FIND_ACTIONS.has(normalized) ||
+			normalized.startsWith("-exec") ||
+			normalized.startsWith("-ok") ||
+			normalized.startsWith("-printf") ||
+			normalized.startsWith("-fprint") ||
+			normalized.startsWith("-fls")
+		);
+	});
+}
+
+function shouldBypassLsRewrite(tokens: string[]): boolean {
+	return tokens.slice(1).some((token) => token.startsWith("-"));
+}
+
+function shouldBypassNativeShellProxyRewrite(tokens: string[]): boolean {
+	const command = normalizeCommandWord(tokens[0] ?? "");
+	const firstArgument = tokens[1]?.toLowerCase();
+	if (!command || !firstArgument) {
+		return false;
+	}
+
+	if (command === "bash") {
+		return BASH_INLINE_COMMAND_FLAGS.has(firstArgument);
+	}
+
+	if (command === "powershell" || command === "powershell.exe") {
+		return POWERSHELL_INLINE_COMMAND_FLAGS.has(firstArgument);
+	}
+
+	if (command === "cmd" || command === "cmd.exe") {
+		return CMD_INLINE_COMMAND_FLAGS.has(firstArgument);
+	}
+
+	return false;
+}
+
+/**
+ * Skips entire compound commands when any segment depends on native shell piping or
+ * formatting-sensitive search/list output that RTK wrappers may not preserve exactly.
+ */
+export function shouldBypassWholeCommandRewrite(command: string): boolean {
+	const segments = splitTopLevelCompoundSegments(command.trim());
+	if (segments.length <= 1) {
+		return false;
+	}
+
+	return segments.some((segment) => {
+		const tokens = splitCommandWords(segment);
+		const commandName = normalizeCommandWord(tokens[0] ?? "");
+		return UNSAFE_COMPOUND_REWRITE_COMMANDS.has(commandName) || shouldBypassNativeShellProxyRewrite(tokens);
+	});
+}
+
 /**
  * Skips RTK rewrites for command shapes that do not map cleanly to RTK wrappers.
  */
@@ -167,6 +314,18 @@ export function shouldBypassRewriteForCommand(commandBody: string, rule: RtkRewr
 
 	if (rule.category === "containers") {
 		return shouldBypassInteractiveContainerRewrite(tokens);
+	}
+
+	if (rule.id === "find") {
+		return shouldBypassFindRewrite(tokens);
+	}
+
+	if (rule.id === "ls") {
+		return shouldBypassLsRewrite(tokens);
+	}
+
+	if (rule.id === "bash-proxy" || rule.id === "cmd-proxy" || rule.id === "powershell-proxy") {
+		return shouldBypassNativeShellProxyRewrite(tokens);
 	}
 
 	return false;

@@ -1,4 +1,5 @@
 import { matchesCommandPatterns, normalizeCommandForDetection } from "./command-detection.js";
+import { compactPath } from "./path-utils.js";
 
 const LINTER_COMMAND_PATTERNS = [
 	/^(?:pnpm\s+)?(?:npx\s+)?eslint\b/,
@@ -89,17 +90,6 @@ function detectLinterType(command: string | undefined | null): string {
 	return "Linter";
 }
 
-function compactPath(path: string, maxLength: number): string {
-	if (path.length <= maxLength) {
-		return path;
-	}
-	const parts = path.split("/");
-	if (parts.length <= 3) {
-		return path;
-	}
-	return `${parts[0]}/.../${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
-}
-
 export function aggregateLinterOutput(output: string, command: string | undefined | null): string | null {
 	if (!isLinterCommand(command)) {
 		return null;
@@ -109,7 +99,7 @@ export function aggregateLinterOutput(output: string, command: string | undefine
 	const issues = parseIssues(output);
 
 	if (issues.length === 0) {
-		return `✓ ${linterType}: No issues found`;
+		return `[OK] ${linterType}: No issues found`;
 	}
 
 	const errors = issues.filter((issue) => issue.severity === "ERROR").length;

@@ -12,6 +12,7 @@ export interface RtkOutputCompactionConfig {
 		maxChars: number;
 	};
 	sourceCodeFilteringEnabled: boolean;
+	preserveExactSkillReads: boolean;
 	sourceCodeFiltering: RtkSourceFilterLevel;
 	smartTruncate: {
 		enabled: boolean;
@@ -64,6 +65,7 @@ export const DEFAULT_RTK_INTEGRATION_CONFIG: RtkIntegrationConfig = {
 			maxChars: 12_000,
 		},
 		sourceCodeFilteringEnabled: true,
+		preserveExactSkillReads: false,
 		sourceCodeFiltering: "minimal",
 		smartTruncate: {
 			enabled: true,
@@ -99,16 +101,3 @@ export interface RuntimeStatus {
 	lastError?: string;
 }
 
-export const RTK_CATEGORY_KEYS = [
-	"git",
-	"files",
-	"rust",
-	"js",
-	"python",
-	"go",
-	"containers",
-	"network",
-	"packages",
-] as const;
-
-export type RtkCategoryKey = (typeof RTK_CATEGORY_KEYS)[number];
