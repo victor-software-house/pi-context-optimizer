@@ -25,7 +25,7 @@ interface SettingValueSyncTarget {
 }
 
 const ON_OFF = ["on", "off"];
-const MODE_VALUES = ["rewrite", "suggest"];
+const MODE_VALUES = ["rewrite", "suggest", "compact-only"];
 const SOURCE_FILTER_VALUES = [...RTK_SOURCE_FILTER_LEVELS];
 const TRUNCATE_MAX_CHAR_VALUES = ["4000", "8000", "12000", "20000", "50000", "100000", "200000"];
 const SMART_TRUNCATE_LINE_VALUES = ["40", "80", "120", "160", "220", "320", "500", "1000", "2000", "4000"];
@@ -86,8 +86,8 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		},
 		{
 			id: "mode",
-			label: "Rewrite mode",
-			description: "rewrite = auto-rewrite bash commands, suggest = notify only",
+			label: "Operating mode",
+			description: "rewrite = auto-rewrite bash commands, suggest = notify only, compact-only = keep output compaction without command rewriting",
 			currentValue: config.mode,
 			values: MODE_VALUES,
 		},

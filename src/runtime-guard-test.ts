@@ -30,6 +30,15 @@ runTest("suggest mode does not suppress suggestions when RTK is missing", () => 
 	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), false);
 });
 
+runTest("compact-only mode does not require RTK availability", () => {
+	const config = cloneDefaultConfig();
+	config.mode = "compact-only";
+	config.guardWhenRtkMissing = true;
+
+	assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), false);
+	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), false);
+});
+
 runTest("guard disabled never blocks command handling", () => {
 	const config = cloneDefaultConfig();
 	config.mode = "rewrite";
