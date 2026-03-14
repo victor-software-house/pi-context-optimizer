@@ -1,3 +1,4 @@
+import { type ExtensionAPI, type ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
 import assert from "node:assert/strict";
 import { mock } from "bun:test";
 
@@ -31,15 +32,9 @@ const { getRtkArgumentCompletions } = await import("./command-completions.ts");
 
 type Notification = { message: string; level: "info" | "warning" | "error" };
 
-interface CommandContextStub {
-	hasUI: boolean;
-	ui: {
-		notify(message: string, level: "info" | "warning" | "error"): void;
-		custom<T>(): Promise<T>;
-	};
-}
-
-function createNotifyContext(hasUI: boolean): { ctx: CommandContextStub; notifications: Notification[] } {
+function createNotifyContext(
+	hasUI: boolean,
+): { ctx: ExtensionCommandContext; notifications: Notification[] } {
 	const notifications: Notification[] = [];
 	return {
 		ctx: {
@@ -52,10 +47,11 @@ function createNotifyContext(hasUI: boolean): { ctx: CommandContextStub; notific
 					throw new Error("custom UI should not be invoked in config-modal tests");
 				},
 			},
-		},
+		} as ExtensionCommandContext,
 		notifications,
 	};
 }
+
 
 function lastNotification(notifications: Notification[]): Notification {
 	return notifications[notifications.length - 1] as Notification;
@@ -96,7 +92,7 @@ await runAsyncTest("config modal command handlers route RTK subcommands to contr
 			controllerState.config = next;
 			controllerState.lastSavedMode = next.mode;
 		},
-		getConfigPath: () => "C:/tmp/pi-rtk-optimizer/config.json",
+		getConfigPath: () => "C:/tmp/pi-rtk-internal/config.json",
 		getRuntimeStatus: () => ({ rtkAvailable: false, lastError: "not found" }),
 		refreshRuntimeStatus: async () => {
 			controllerState.refreshed += 1;
@@ -108,60 +104,65 @@ await runAsyncTest("config modal command handlers route RTK subcommands to contr
 		},
 	};
 
-	let registeredName = "";
-	let definition: {
+	type CommandDefinition = {
 		description: string;
 		getArgumentCompletions?: (argumentPrefix: string) => Array<{ value: string; label: string; description?: string }> | null;
-		handler: (args: string, ctx: CommandContextStub) => Promise<void>;
-	} | null = null;
+		handler: (args: string, ctx: ExtensionCommandContext) => void | Promise<void>;
+	};
 
-	registerRtkIntegrationCommand(
-		{
-			registerCommand(name: string, nextDefinition: typeof definition) {
-				registeredName = name;
-				definition = nextDefinition;
-			},
-		} as never,
-		controller as never,
-	);
+	let registeredName = "";
+	let definition: CommandDefinition | null = null;
+
+	const mockedPi = {
+		registerCommand(name: string, nextDefinition: CommandDefinition) {
+			registeredName = name;
+			definition = nextDefinition;
+		},
+	} as unknown as ExtensionAPI;
+
+	registerRtkIntegrationCommand(mockedPi, controller as never);
 
 	assert.equal(registeredName, "rtk");
-	assert.ok(definition !== null);
-	assert.ok((definition?.description ?? "").includes("Configure RTK rewrite"));
-	assert.ok(typeof definition?.getArgumentCompletions === "function");
+	if (definition === null) {
+		throw new Error("Expected command definition to be registered");
+	}
+
+	const commandDefinition = definition as CommandDefinition;
+	assert.ok(commandDefinition.description.includes("Configure RTK rewrite"));
+	assert.ok(typeof commandDefinition.getArgumentCompletions === "function");
 
 	const infoCtx = createNotifyContext(true);
-	await definition?.handler("help", infoCtx.ctx);
+	await commandDefinition.handler("help", infoCtx.ctx);
 	assert.ok(lastNotification(infoCtx.notifications).message.includes("Usage: /rtk"));
 
-	await definition?.handler("show", infoCtx.ctx);
+	await commandDefinition.handler("show", infoCtx.ctx);
 	assert.ok(lastNotification(infoCtx.notifications).message.includes("mode=rewrite"));
 
-	await definition?.handler("path", infoCtx.ctx);
-	assert.equal(lastNotification(infoCtx.notifications).message, "rtk config: C:/tmp/pi-rtk-optimizer/config.json");
+	await commandDefinition.handler("path", infoCtx.ctx);
+	assert.equal(lastNotification(infoCtx.notifications).message, "rtk config: C:/tmp/pi-rtk-internal/config.json");
 
-	await definition?.handler("verify", infoCtx.ctx);
+	await commandDefinition.handler("verify", infoCtx.ctx);
 	assert.equal(controllerState.refreshed, 1);
 	assert.equal(lastNotification(infoCtx.notifications).level, "warning");
 	assert.ok(lastNotification(infoCtx.notifications).message.includes("not available: not found"));
 
-	await definition?.handler("stats", infoCtx.ctx);
+	await commandDefinition.handler("stats", infoCtx.ctx);
 	assert.equal(lastNotification(infoCtx.notifications).message, "metrics summary");
 
-	await definition?.handler("clear-stats", infoCtx.ctx);
+	await commandDefinition.handler("clear-stats", infoCtx.ctx);
 	assert.equal(controllerState.cleared, 1);
 	assert.equal(lastNotification(infoCtx.notifications).message, "RTK metrics cleared.");
 
-	await definition?.handler("reset", infoCtx.ctx);
+	await commandDefinition.handler("reset", infoCtx.ctx);
 	assert.equal(controllerState.lastSavedMode, "rewrite");
 	assert.equal(lastNotification(infoCtx.notifications).message, "RTK integration settings reset to defaults.");
 
-	await definition?.handler("unknown", infoCtx.ctx);
+	await commandDefinition.handler("unknown", infoCtx.ctx);
 	assert.equal(lastNotification(infoCtx.notifications).level, "warning");
 	assert.ok(lastNotification(infoCtx.notifications).message.includes("Usage: /rtk"));
 
 	const headlessCtx = createNotifyContext(false);
-	await definition?.handler("", headlessCtx.ctx);
+	await commandDefinition.handler("", headlessCtx.ctx);
 	assert.equal(lastNotification(headlessCtx.notifications).message, "/rtk requires interactive TUI mode.");
 });
 

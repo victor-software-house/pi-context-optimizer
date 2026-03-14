@@ -1,10 +1,10 @@
-# pi-rtk-optimizer
+# @victor-software-house/pi-rtk-internal
 
-> RTK command rewriting and tool output compaction extension for the Pi coding agent.
+> [INTERNAL] RTK command rewriting and tool output compaction extension for the Pi coding agent.
 
 ![background](https://raw.githubusercontent.com/MasuRii/pi-rtk-optimizer/main/asset/pi-rtk-optimizer-background.png)
 
-**pi-rtk-optimizer** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
+**@victor-software-house/pi-rtk-internal** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
 
 ## Features
 
@@ -59,22 +59,17 @@ Multi-stage pipeline to reduce token consumption:
 Place this folder in one of the following locations:
 
 ```
-~/.pi/agent/extensions/pi-rtk-optimizer     # Global (all projects)
-.pi/extensions/pi-rtk-optimizer              # Project-specific
+~/.pi/agent/extensions/pi-rtk-internal      # Global (all projects)
+.pi/extensions/pi-rtk-internal              # Project-specific
 ```
 
 Pi auto-discovers extensions in these paths on startup.
 
-### npm Package
+### Recommended installation
 
 ```bash
-pi install npm:pi-rtk-optimizer
-```
-
-### Git Repository
-
-```bash
-pi install git:github.com/MasuRii/pi-rtk-optimizer
+# Internal package; prefer the org fork.
+pi install git:github.com/victor-software-house/pi-rtk-optimizer
 ```
 
 ## Usage
@@ -107,7 +102,7 @@ Use arrow keys to navigate settings, Enter to cycle values, and Escape to close.
 Configuration is stored at:
 
 ```
-~/.pi/agent/extensions/pi-rtk-optimizer/config.json
+~/.pi/agent/extensions/pi-rtk-internal/config.json
 ```
 
 A starter template is included at `config/config.example.json`.
@@ -286,6 +281,18 @@ npm run build:check
 Inspired by:
 - [mcowger/pi-rtk](https://github.com/mcowger/pi-rtk)
 - [rtk-ai/rtk](https://github.com/rtk-ai/rtk)
+
+## License
+
+[MIT](LICENSE) © MasuRii
+k)
+- [rtk-ai/rtk](https://github.com/rtk-ai/rtk)
+
+## License
+
+[MIT](LICENSE) © MasuRii
+SE) © MasuRii
+thub.com/rtk-ai/rtk)
 
 ## License
 

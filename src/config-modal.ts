@@ -506,7 +506,7 @@ async function openSettingsModal(ctx: ExtensionCommandContext, controller: RtkIn
 					borderStyle: "rounded",
 					titleBar: {
 						left: "RTK Integration Settings",
-						right: "pi-rtk-optimizer",
+						right: "pi-rtk-internal",
 					},
 					helpUndertitle: {
 						text: "Esc: close | ↑↓: navigate | Space: toggle",
@@ -597,7 +597,7 @@ export function registerRtkIntegrationCommand(pi: ExtensionAPI, controller: RtkI
 	pi.registerCommand("rtk", {
 		description: "Configure RTK rewrite and output compaction integration",
 		getArgumentCompletions: getRtkArgumentCompletions,
-		handler: async (args, ctx) => {
+		handler: async (args: string, ctx: ExtensionCommandContext) => {
 			if (await handleArgs(args, ctx, controller)) {
 				return;
 			}
