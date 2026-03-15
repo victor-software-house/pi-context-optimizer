@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "bd4be046d1c7aecc0b3f5cb1349dd712f3b0732f",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "@victor-software-house/pi-context-optimizer",
+      "changelog-path": "CHANGELOG.md",
+      "include-v-in-tag": true,
+      "include-component-in-tag": false
+    }
+  }
+}
