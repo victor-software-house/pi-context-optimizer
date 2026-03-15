@@ -506,7 +506,7 @@ async function openSettingsModal(ctx: ExtensionCommandContext, controller: RtkIn
 					borderStyle: "rounded",
 					titleBar: {
 						left: "RTK Integration Settings",
-						right: "pi-rtk-internal",
+						right: "pi-context-optimizer",
 					},
 					helpUndertitle: {
 						text: "Esc: close | ↑↓: navigate | Space: toggle",

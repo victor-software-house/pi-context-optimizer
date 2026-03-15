@@ -1,10 +1,10 @@
-# @victor-software-house/pi-rtk-internal
+# @victor-software-house/pi-context-optimizer
 
-> [INTERNAL] RTK command rewriting and tool output compaction extension for the Pi coding agent.
+> Pi command rewriting and tool output compaction extension for the Pi coding agent.
 
 ![background](https://raw.githubusercontent.com/MasuRii/pi-rtk-optimizer/main/asset/pi-rtk-optimizer-background.png)
 
-**@victor-software-house/pi-rtk-internal** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
+**@victor-software-house/pi-context-optimizer** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
 
 ## Features
 
@@ -59,8 +59,8 @@ Multi-stage pipeline to reduce token consumption:
 Place this folder in one of the following locations:
 
 ```
-~/.pi/agent/extensions/pi-rtk-internal      # Global (all projects)
-.pi/extensions/pi-rtk-internal              # Project-specific
+~/.pi/agent/extensions/pi-context-optimizer      # Global (all projects)
+.pi/extensions/pi-context-optimizer              # Project-specific
 ```
 
 Pi auto-discovers extensions in these paths on startup.
@@ -68,8 +68,7 @@ Pi auto-discovers extensions in these paths on startup.
 ### Recommended installation
 
 ```bash
-# Internal package; prefer the org fork.
-pi install git:github.com/victor-software-house/pi-rtk-optimizer
+pi install git:github.com/victor-software-house/pi-context-optimizer
 ```
 
 ## Usage
@@ -102,7 +101,7 @@ Use arrow keys to navigate settings, Enter to cycle values, and Escape to close.
 Configuration is stored at:
 
 ```
-~/.pi/agent/extensions/pi-rtk-internal/config.json
+~/.pi/agent/extensions/pi-context-optimizer/config.json
 ```
 
 A starter template is included at `config/config.example.json`.
@@ -257,6 +256,19 @@ Automatic fixes applied on Windows:
 - **Peer dependencies:** `@mariozechner/pi-coding-agent`, `@mariozechner/pi-tui`
 - **Runtime:** Node.js ≥20, optional `rtk` binary for command rewriting
 
+## Credits and prior art
+
+This project builds on ideas explored in earlier public work.
+
+References:
+
+- `mcowger/pi-rtk`
+- `MasuRii/pi-rtk-optimizer`
+- `sherif-fanous/pi-rtk`
+- `rtk-ai/rtk`
+
+These projects informed the command rewriting, output compaction, and RTK integration approaches used here.
+
 ## Development
 
 ```bash
@@ -297,3 +309,10 @@ thub.com/rtk-ai/rtk)
 ## License
 
 [MIT](LICENSE) © MasuRii
+k)
+
+## License
+
+[MIT](LICENSE) © MasuRii
+uRii
+uRii

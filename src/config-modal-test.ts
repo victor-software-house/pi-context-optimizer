@@ -92,7 +92,7 @@ await runAsyncTest("config modal command handlers route RTK subcommands to contr
 			controllerState.config = next;
 			controllerState.lastSavedMode = next.mode;
 		},
-		getConfigPath: () => "C:/tmp/pi-rtk-internal/config.json",
+		getConfigPath: () => "C:/tmp/pi-context-optimizer/config.json",
 		getRuntimeStatus: () => ({ rtkAvailable: false, lastError: "not found" }),
 		refreshRuntimeStatus: async () => {
 			controllerState.refreshed += 1;
@@ -139,7 +139,7 @@ await runAsyncTest("config modal command handlers route RTK subcommands to contr
 	assert.ok(lastNotification(infoCtx.notifications).message.includes("mode=rewrite"));
 
 	await commandDefinition.handler("path", infoCtx.ctx);
-	assert.equal(lastNotification(infoCtx.notifications).message, "rtk config: C:/tmp/pi-rtk-internal/config.json");
+	assert.equal(lastNotification(infoCtx.notifications).message, "rtk config: C:/tmp/pi-context-optimizer/config.json");
 
 	await commandDefinition.handler("verify", infoCtx.ctx);
 	assert.equal(controllerState.refreshed, 1);

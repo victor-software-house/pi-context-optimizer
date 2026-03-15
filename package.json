@@ -1,8 +1,7 @@
 {
-  "name": "@victor-software-house/pi-rtk-internal",
+  "name": "@victor-software-house/pi-context-optimizer",
   "version": "0.4.1",
-  "private": true,
-  "description": "[INTERNAL] Pi extension for RTK command rewriting and tool-output compaction optimization.",
+  "description": "Pi extension for command rewriting and tool-output compaction optimization.",
   "type": "module",
   "main": "./index.ts",
   "exports": {
@@ -22,7 +21,7 @@
     "typecheck": "bunx tsc -p tsconfig.json",
     "test": "bun ./src/output-compactor-test.ts && bun ./src/command-rewriter-test.ts && bun ./src/runtime-guard-test.ts && bun ./src/additional-coverage-test.ts && bun ./src/config-modal-test.ts && bun ./src/index-test.ts",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "build:check": "bunx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-rtk-internal-check.mjs --external:@mariozechner/pi-coding-agent --external:@mariozechner/pi-tui && bun -e \"import { unlinkSync } from 'node:fs'; unlinkSync('./.pi-rtk-internal-check.mjs');\""
+    "build:check": "bunx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-context-optimizer-check.mjs --external:@mariozechner/pi-coding-agent --external:@mariozechner/pi-tui && bun -e \"import { unlinkSync } from 'node:fs'; unlinkSync('./.pi-context-optimizer-check.mjs');\""
   },
   "keywords": [
     "pi-package",
@@ -37,12 +36,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/victor-software-house/pi-rtk-optimizer.git"
+    "url": "git+https://github.com/victor-software-house/pi-context-optimizer.git"
   },
   "bugs": {
-    "url": "https://github.com/victor-software-house/pi-rtk-optimizer/issues"
+    "url": "https://github.com/victor-software-house/pi-context-optimizer/issues"
   },
-  "homepage": "https://github.com/victor-software-house/pi-rtk-optimizer#readme",
+  "homepage": "https://github.com/victor-software-house/pi-context-optimizer#readme",
   "engines": {
     "node": ">=20"
   },
