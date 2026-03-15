@@ -160,6 +160,7 @@ Release workflow summary:
 
 ## Documentation
 
+- [Current implementation and RTK in practice](docs/current-implementation-and-rtk-in-practice.md)
 - [RTK architecture, prompt caching, and model handoffs](docs/rtk-architecture-prompt-caching-and-model-handoffs.md)
 - [Roadmap](ROADMAP.md)
 
