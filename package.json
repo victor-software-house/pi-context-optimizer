@@ -29,7 +29,11 @@
     "pi-package",
     "pi",
     "pi-extension",
+    "pi-coding-agent",
+    "pi.dev",
     "rtk",
+    "command-rewriting",
+    "context-optimization",
     "token-optimization",
     "tool-compaction",
     "coding-agent"

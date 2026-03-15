@@ -63,6 +63,26 @@ Supported command families include:
 
 ## Installation
 
+### npm installation
+
+Preferred install method:
+
+```bash
+pi install npm:@victor-software-house/pi-context-optimizer
+```
+
+Pin a specific version when needed:
+
+```bash
+pi install npm:@victor-software-house/pi-context-optimizer@1.0.0
+```
+
+### Git installation
+
+```bash
+pi install git:github.com/victor-software-house/pi-context-optimizer
+```
+
 ### Local extension folder
 
 Place this project in one of these locations:
@@ -70,12 +90,6 @@ Place this project in one of these locations:
 ```text
 ~/.pi/agent/extensions/pi-context-optimizer
 .pi/extensions/pi-context-optimizer
-```
-
-### Git installation
-
-```bash
-pi install git:github.com/victor-software-house/pi-context-optimizer
 ```
 
 ## Configuration
