@@ -121,7 +121,7 @@ This extension uses Pi extension events directly:
 
 ## Development
 
-Install dependencies to set up Husky and the `commit-msg` commitlint hook:
+Install dependencies to set up Lefthook and the `commit-msg` commitlint hook:
 
 ```bash
 npm install
@@ -146,7 +146,8 @@ This repository uses:
 
 - `semantic-release` for versioning, tags, GitHub releases, and npm publishing
 - npm trusted publishing from GitHub Actions
-- commitlint plus Husky to enforce Conventional Commits locally
+- commitlint plus Lefthook to enforce Conventional Commits locally
+- commitlint checks in GitHub Actions so release-driving commit rules are enforced in CI too
 
 Release workflow summary:
 

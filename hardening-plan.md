@@ -54,7 +54,7 @@ This document outlines the steps to adapt and harden the original `pi-rtk-optimi
 3.  **Release Automation:**
     -   [x] Implement `semantic-release` for automated versioning, tags, GitHub releases, and npm publish from GitHub Actions.
     -   [x] Add npm trusted publishing automation for the release workflow.
-    -   [x] Add commitlint-based Conventional Commit enforcement through a `commit-msg` hook.
+    -   [x] Add commitlint-based Conventional Commit enforcement through a Lefthook-managed `commit-msg` hook and CI validation.
     -   [ ] Create GitHub issue templates for bug reports, especially for command rewrite parity regressions.
 
 ## Phase 4: Repository Independence

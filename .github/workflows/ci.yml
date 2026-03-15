@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -25,6 +27,34 @@ jobs:
 
       - name: Install dependencies
         run: npm clean-install
+
+      - name: Lint commit messages
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_SHA_VALUE: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            FROM="$PR_BASE_SHA"
+            TO="$PR_HEAD_SHA"
+          else
+            FROM="$PUSH_BEFORE"
+            TO="$GITHUB_SHA_VALUE"
+          fi
+
+          if [ -z "$TO" ]; then
+            echo "Missing target SHA for commitlint"
+            exit 1
+          fi
+
+          if [ -z "$FROM" ] || [ "$FROM" = "0000000000000000000000000000000000000000" ]; then
+            npx commitlint --last --verbose
+            exit 0
+          fi
+
+          npx commitlint --from "$FROM" --to "$TO" --verbose
 
       - name: Typecheck
         run: bunx tsc -p tsconfig.json
