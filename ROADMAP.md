@@ -46,6 +46,8 @@
 - Expand compatibility coverage for macOS, Linux, and Windows.
 - Add issue templates and release automation when the project stabilizes.
 
+on when the project stabilizes.
+
 ## RTK analysis notes
 
 ### What RTK is

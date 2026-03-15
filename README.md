@@ -118,6 +118,11 @@ bun ./src/index-test.ts
 bun run build:check
 ```
 
+## Documentation
+
+- [RTK analysis](docs/rtk-analysis.md)
+- [Roadmap](ROADMAP.md)
+
 ## Credits and prior art
 
 This project builds on ideas explored in earlier public work.
