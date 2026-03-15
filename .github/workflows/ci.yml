@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsc -p tsconfig.json
+
+      - name: Tests
+        run: bun ./src/output-compactor-test.ts && bun ./src/command-rewriter-test.ts && bun ./src/runtime-guard-test.ts && bun ./src/additional-coverage-test.ts && bun ./src/config-modal-test.ts && bun ./src/index-test.ts
+
+      - name: Bundle check
+        run: bun run build:check

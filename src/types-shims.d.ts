@@ -168,6 +168,7 @@ declare module "bun:test" {
 declare const process: {
 	platform: string;
 	env: Record<string, string | undefined>;
+	cwd(): string;
 };
 
 declare module "node:os" {
