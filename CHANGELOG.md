@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-15
+
+### Added
+- Published the package to npm as `@victor-software-house/pi-context-optimizer`.
+- Added npm trusted publishing from GitHub Actions.
+- Added commitlint enforcement in local hooks and CI for Conventional Commits.
+
+### Changed
+- Migrated release automation from `release-please` to `semantic-release`.
+- Switched local commit hook management from Husky to Lefthook.
+- Updated GitHub Actions workflows to current action majors and active Node LTS for workflow steps.
+- Updated installation guidance to prefer npm installs for package gallery discovery.
+
 ## [0.4.0] - 2026-03-12
 
 ### Added
