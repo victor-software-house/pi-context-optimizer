@@ -5,4 +5,5 @@ dist/
 coverage/
 config.json
 *.tmp
+.firecrawl/
 .pi-rtk-optimizer-check.mjs
