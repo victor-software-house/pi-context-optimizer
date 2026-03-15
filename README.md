@@ -1,260 +1,122 @@
 # @victor-software-house/pi-context-optimizer
 
-> Pi command rewriting and tool output compaction extension for the Pi coding agent.
+Pi extension for command rewriting and tool output compaction in the Pi coding agent.
 
 ![background](https://raw.githubusercontent.com/MasuRii/pi-rtk-optimizer/main/asset/pi-rtk-optimizer-background.png)
 
-**@victor-software-house/pi-context-optimizer** automatically rewrites `bash` tool commands to their `rtk` equivalents and compacts noisy tool output (`bash`, `read`, `grep`) to reduce context window usage while preserving actionable information for the AI agent.
+`@victor-software-house/pi-context-optimizer` rewrites selected `bash` commands through RTK and compacts noisy tool output from `bash`, `read`, and `grep` so the agent spends less context on low-value text.
+
+## Status
+
+This repository is the maintained public standalone continuation of earlier RTK-related Pi extension work.
 
 ## Features
 
-### Command Rewriting
+### Command handling modes
 
-- **Automatic rewriting** or **suggestion-only** mode for common development workflows
-- Supported command categories:
-  - **Git/GitHub** — `git`, `gh` commands
-  - **Filesystem** — `cat`, `head`, `tail`, `grep`, `rg`, `ls`, `tree`, `find`, `diff`, `wc`, `bash`, `cmd`, `powershell`
-  - **Rust** — `cargo` commands
-  - **JavaScript** — `vitest`, `npm`, `yarn`, `pnpm`, `bun` commands
-  - **Python** — `pytest`, `python`, `pip`, `uv` commands
-  - **Go** — `go` commands
-  - **Containers** — `docker`, `docker-compose`, `podman` commands
-  - **Network** — `curl`, `wget` commands
-  - **Package Managers** — `apt`, `brew`, `dnf`, `pacman`, `yum` commands
-- Runtime guard when `rtk` binary is unavailable (falls back to original commands only in rewrite mode)
-- Safe rewrite bypasses for structured `gh` output commands and non-interactive container shell sessions
-- Improved command parsing for `sed`, shell separators, and `pnpm dlx` proxy rewrites
+- `rewrite` — rewrite supported `bash` commands through RTK automatically
+- `suggest` — keep original commands, but show RTK suggestions
+- `compact-only` — disable command rewriting and keep output compaction enabled
 
-### Output Compaction Pipeline
+### Rewrite coverage
 
-Multi-stage pipeline to reduce token consumption:
+Supported command families include:
 
-| Stage | Description |
-|-------|-------------|
-| ANSI Stripping | Removes terminal color/formatting codes |
-| Test Aggregation | Summarizes test runner output (pass/fail counts) |
-| Build Filtering | Extracts errors/warnings from build output |
-| Git Compaction | Condenses `git status`, `git log`, `git diff` output |
-| Linter Aggregation | Summarizes linting tool output |
-| Search Grouping | Groups `grep`/`rg` results by file |
-| Source Code Filtering | `none`, `minimal`, or `aggressive` comment/whitespace removal with userscript metadata preservation |
-| Smart Truncation | Preserves file boundaries and important lines while keeping 80-line reads exact |
-| Hard Truncation | Final character limit enforcement |
+- Git and GitHub
+- Filesystem and search commands
+- Rust toolchain commands
+- JavaScript and TypeScript tooling
+- Python tooling
+- Go tooling
+- Container tooling
+- Network commands
+- Package manager commands
 
-### Interactive Settings
+### Output compaction pipeline
 
-- TUI settings modal via `/rtk` command
-- Real-time configuration changes without restart
-- Command completions for all subcommands
+- ANSI stripping
+- test output aggregation
+- build output filtering
+- git output compaction
+- linter aggregation
+- search result grouping
+- source code filtering
+- smart truncation
+- hard truncation
 
-### Session Metrics
+### Read safety features
 
-- Tracks compaction savings per tool type
-- View statistics with `/rtk stats`
+- exact output preserved for explicit range reads (`offset` or `limit`)
+- exact output preserved for short reads
+- optional exact preservation for skill reads
+
+### Operator controls
+
+- `/rtk` settings modal
+- `/rtk show`
+- `/rtk path`
+- `/rtk verify`
+- `/rtk stats`
+- `/rtk clear-stats`
+- `/rtk reset`
+- `/rtk help`
 
 ## Installation
 
-### Local Extension Folder
+### Local extension folder
 
-Place this folder in one of the following locations:
+Place this project in one of these locations:
 
+```text
+~/.pi/agent/extensions/pi-context-optimizer
+.pi/extensions/pi-context-optimizer
 ```
-~/.pi/agent/extensions/pi-context-optimizer      # Global (all projects)
-.pi/extensions/pi-context-optimizer              # Project-specific
-```
 
-Pi auto-discovers extensions in these paths on startup.
-
-### Recommended installation
+### Git installation
 
 ```bash
 pi install git:github.com/victor-software-house/pi-context-optimizer
 ```
 
-## Usage
-
-### Settings Modal
-
-Open the interactive settings modal:
-
-```
-/rtk
-```
-
-Use arrow keys to navigate settings, Enter to cycle values, and Escape to close.
-
-### Subcommands
-
-| Command | Description |
-|---------|-------------|
-| `/rtk` | Open settings modal |
-| `/rtk show` | Display current configuration and runtime status |
-| `/rtk path` | Show config file path |
-| `/rtk verify` | Check if `rtk` binary is available |
-| `/rtk stats` | Show output compaction metrics for current session |
-| `/rtk clear-stats` | Reset compaction metrics |
-| `/rtk reset` | Reset all settings to defaults |
-| `/rtk help` | Display usage help |
-
 ## Configuration
 
-Configuration is stored at:
+Default config path:
 
-```
+```text
 ~/.pi/agent/extensions/pi-context-optimizer/config.json
 ```
 
-A starter template is included at `config/config.example.json`.
+A starter config is included at `config/config.example.json`.
 
-### Configuration Options
+## Modes
 
-#### Top-Level Settings
+| Mode | Rewrite commands | Compact output | Requires RTK binary for value |
+|---|---:|---:|---:|
+| `rewrite` | Yes | Yes | Yes |
+| `suggest` | No | Yes | No |
+| `compact-only` | No | Yes | No |
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | `true` | Master switch for all extension features |
-| `mode` | string | `"rewrite"` | `"rewrite"` (auto-rewrite) or `"suggest"` (notify only) |
-| `guardWhenRtkMissing` | boolean | `true` | Run original commands when rtk binary unavailable |
-| `showRewriteNotifications` | boolean | `true` | Show rewrite notices in TUI |
+## Event hooks used
 
-#### Rewrite Category Toggles
+This extension uses Pi extension events directly:
 
-| Option | Default | Commands Affected |
-|--------|---------|-------------------|
-| `rewriteGitGithub` | `true` | `git`, `gh` |
-| `rewriteFilesystem` | `true` | `cat`, `head`, `tail`, `grep`, `rg`, `ls`, `tree`, `find`, `diff`, `wc` |
-| `rewriteRust` | `true` | `cargo` |
-| `rewriteJavaScript` | `true` | `vitest`, `npm`, `yarn`, `pnpm`, `bun` |
-| `rewritePython` | `true` | `pytest`, `python`, `pip`, `uv` |
-| `rewriteGo` | `true` | `go` |
-| `rewriteContainers` | `true` | `docker`, `docker-compose`, `podman` |
-| `rewriteNetwork` | `true` | `curl`, `wget` |
-| `rewritePackageManagers` | `true` | `apt`, `brew`, `dnf`, `pacman`, `yum` |
+- `tool_call` — inspect and optionally rewrite `bash` commands
+- `tool_result` — compact `bash`, `read`, and `grep` outputs
+- `before_agent_start` — add troubleshooting guidance to the prompt
+- `session_start` / `session_switch` — refresh config and runtime state
 
-#### Output Compaction Settings
+## Development
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `outputCompaction.enabled` | boolean | `true` | Enable output compaction pipeline |
-| `outputCompaction.stripAnsi` | boolean | `true` | Remove ANSI escape codes |
-| `outputCompaction.sourceCodeFilteringEnabled` | boolean | `true` | Enable source code filtering for `read` output |
-| `outputCompaction.preserveExactSkillReads` | boolean | `false` | Keep reads under Pi skill directories exact, bypassing read compaction |
-| `outputCompaction.sourceCodeFiltering` | string | `"minimal"` | Filter level: `"none"`, `"minimal"`, `"aggressive"` |
-| `outputCompaction.aggregateTestOutput` | boolean | `true` | Summarize test runner output |
-| `outputCompaction.filterBuildOutput` | boolean | `true` | Filter build/compile output |
-| `outputCompaction.compactGitOutput` | boolean | `true` | Compact git command output |
-| `outputCompaction.aggregateLinterOutput` | boolean | `true` | Summarize linter output |
-| `outputCompaction.groupSearchOutput` | boolean | `true` | Group search results by file |
-| `outputCompaction.trackSavings` | boolean | `true` | Track compaction metrics |
-
-#### Truncation Settings
-
-| Option | Type | Default | Range | Description |
-|--------|------|---------|-------|-------------|
-| `outputCompaction.smartTruncate.enabled` | boolean | `true` | — | Enable smart line-based truncation |
-| `outputCompaction.smartTruncate.maxLines` | number | `220` | 40–4000 | Maximum lines after smart truncation |
-| `outputCompaction.truncate.enabled` | boolean | `true` | — | Enable hard character truncation |
-| `outputCompaction.truncate.maxChars` | number | `12000` | 1000–200000 | Maximum characters in final output |
-
-### Source Code Filtering Levels
-
-| Level | Behavior |
-|-------|----------|
-| `none` | No filtering applied |
-| `minimal` | Removes non-doc comments, collapses blank lines |
-| `aggressive` | Also removes imports, keeps only signatures and key logic |
-
-> **Note:** If file edits fail because "old text does not match," disable source filtering via `/rtk`, re-read the file, apply the edit, then re-enable filtering.
-
-### Example Configuration
-
-```json
-{
-  "enabled": true,
-  "mode": "rewrite",
-  "guardWhenRtkMissing": true,
-  "showRewriteNotifications": true,
-  "rewriteGitGithub": true,
-  "rewriteFilesystem": true,
-  "rewriteRust": true,
-  "rewriteJavaScript": true,
-  "rewritePython": true,
-  "rewriteGo": true,
-  "rewriteContainers": true,
-  "rewriteNetwork": true,
-  "rewritePackageManagers": true,
-  "outputCompaction": {
-    "enabled": true,
-    "stripAnsi": true,
-    "sourceCodeFilteringEnabled": true,
-    "preserveExactSkillReads": false,
-    "sourceCodeFiltering": "minimal",
-    "aggregateTestOutput": true,
-    "filterBuildOutput": true,
-    "compactGitOutput": true,
-    "aggregateLinterOutput": true,
-    "groupSearchOutput": true,
-    "trackSavings": true,
-    "smartTruncate": {
-      "enabled": true,
-      "maxLines": 220
-    },
-    "truncate": {
-      "enabled": true,
-      "maxChars": 12000
-    }
-  }
-}
+```bash
+bunx tsc -p tsconfig.json
+bun ./src/output-compactor-test.ts
+bun ./src/command-rewriter-test.ts
+bun ./src/runtime-guard-test.ts
+bun ./src/additional-coverage-test.ts
+bun ./src/config-modal-test.ts
+bun ./src/index-test.ts
+bun run build:check
 ```
-
-## Technical Details
-
-### Architecture
-
-```
-index.ts                    # Pi auto-discovery entrypoint
-src/
-├── index.ts                # Extension bootstrap and event wiring
-├── config-store.ts         # Config load/save with normalization
-├── config-modal.ts         # TUI settings modal and /rtk handler
-├── command-rewriter.ts     # Command tokenization and rewrite logic
-├── rewrite-bypass.ts       # Rewrite safety bypass rules for interactive/structured commands
-├── rewrite-rules.ts        # Rewrite rule catalog
-├── runtime-guard.ts        # Runtime availability guard helpers for rewrite mode
-├── output-compactor.ts     # Tool result compaction pipeline
-├── output-metrics.ts       # Savings tracking and reporting
-├── command-completions.ts  # /rtk subcommand completions
-├── windows-command-helpers.ts  # Windows bash compatibility
-└── techniques/             # Compaction technique implementations
-    ├── ansi.ts             # ANSI code stripping
-    ├── build.ts            # Build output filtering
-    ├── test-output.ts      # Test output aggregation
-    ├── linter.ts           # Linter output aggregation
-    ├── git.ts              # Git output compaction
-    ├── search.ts           # Search result grouping
-    ├── source.ts           # Source code filtering
-    └── truncate.ts         # Smart and hard truncation
-```
-
-### Event Hooks
-
-The extension hooks into Pi's event system:
-
-- **`beforeToolCall`** — Rewrites bash commands to rtk equivalents
-- **`afterToolResult`** — Compacts tool output before context consumption
-- **`command`** — Handles `/rtk` command and subcommands
-
-### Windows Compatibility
-
-Automatic fixes applied on Windows:
-
-- `cd /d <path>` → `cd "<normalized-path>"` (converts backslashes)
-- Prepends `PYTHONIOENCODING=utf-8` for Python commands
-
-### Dependencies
-
-- **Peer dependencies:** `@mariozechner/pi-coding-agent`, `@mariozechner/pi-tui`
-- **Runtime:** Node.js ≥20, optional `rtk` binary for command rewriting
 
 ## Credits and prior art
 
@@ -269,50 +131,6 @@ References:
 
 These projects informed the command rewriting, output compaction, and RTK integration approaches used here.
 
-## Development
-
-```bash
-# Build
-npm run build
-
-# Full typecheck
-npm run typecheck
-
-# Run tests
-npm run test
-
-# Full verification
-npm run check
-
-# Bundle sanity check
-npm run build:check
-```
-
-## Credits
-
-Inspired by:
-- [mcowger/pi-rtk](https://github.com/mcowger/pi-rtk)
-- [rtk-ai/rtk](https://github.com/rtk-ai/rtk)
-
 ## License
 
-[MIT](LICENSE) © MasuRii
-k)
-- [rtk-ai/rtk](https://github.com/rtk-ai/rtk)
-
-## License
-
-[MIT](LICENSE) © MasuRii
-SE) © MasuRii
-thub.com/rtk-ai/rtk)
-
-## License
-
-[MIT](LICENSE) © MasuRii
-k)
-
-## License
-
-[MIT](LICENSE) © MasuRii
-uRii
-uRii
+[MIT](LICENSE)

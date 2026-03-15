@@ -2,13 +2,13 @@
 
 This document outlines the steps to adapt and harden the original `pi-rtk-optimizer` codebase into `pi-context-optimizer` for `victor-software-house`.
 
-## Immediate private maintenance sequence
+## Immediate maintenance sequence
 
 1. Complete strict typing and remaining shim cleanup.
-2. Finish internal renaming and documentation cleanup.
+2. Finish renaming and documentation cleanup.
 3. Improve persistence, edit safety, and compaction controls.
-4. Separate the project from fork-based maintenance.
-5. Check the original source repository, compare it with the intermediate fork, and if needed create a separate fresh fork of the original source for a full fix implementation path. Abandoned. We do not care about this path anymore.
+4. Continue maintenance on the standalone public repository.
+5. Original-source comparison path: abandoned. We do not care about this path anymore.
 
 ## Phase 1: Initial Hardening & Hygiene
 
@@ -55,14 +55,12 @@ This document outlines the steps to adapt and harden the original `pi-rtk-optimi
     -   [ ] Implement `release-please` or a similar tool for automated changelog generation and version bumping.
     -   [ ] Create GitHub issue templates for bug reports, especially for command rewrite parity regressions.
 
-## Phase 4: Repository Independence and Upstream Validation
+## Phase 4: Repository Independence
 
-1.  **De-fork and Rename:**
-    -   [ ] Create a new private standalone repository instead of continuing on a GitHub fork.
-    -   [ ] Rename the repository, package, and extension identifiers to a durable internal name.
-    -   [ ] Push the current hardened history into the new standalone repository and retire the fork-based repo.
+1.  **Standalone repository transition:**
+    -   [x] Create a new standalone public repository instead of continuing on a GitHub fork.
+    -   [x] Rename the repository, package, and extension identifiers to a durable name.
+    -   [x] Push the current hardened history into the standalone repository.
 
-2.  **Check the Original Source Repository:**
-    -   [ ] Inspect the original source repository behind the current fork chain.
-    -   [ ] Compare the current internal branch against both the original source and the intermediate fork to identify partial fixes versus missing fixes.
-    -   [ ] If useful, create a separate fresh fork of the original source repository for forensic comparison and potential clean-room backporting of the full fix set.
+2.  **Original-source comparison:**
+    -   [x] Explicitly abandon the original-source comparison path.
