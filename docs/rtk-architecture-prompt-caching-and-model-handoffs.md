@@ -1,4 +1,4 @@
-# RTK analysis
+# RTK architecture, prompt caching, and model handoffs
 
 This document describes how RTK works, what implementation model it uses, and what tradeoffs it introduces for Pi-based agent workflows.
 

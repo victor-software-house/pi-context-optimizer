@@ -120,7 +120,7 @@ bun run build:check
 
 ## Documentation
 
-- [RTK analysis](docs/rtk-analysis.md)
+- [RTK architecture, prompt caching, and model handoffs](docs/rtk-architecture-prompt-caching-and-model-handoffs.md)
 - [Roadmap](ROADMAP.md)
 
 ## Credits and prior art

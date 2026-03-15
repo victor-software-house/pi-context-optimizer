@@ -5,7 +5,7 @@
 1. Complete strict typing and remove as much shimmed typing as possible.
 2. Finish the rename and documentation cleanup around `pi-context-optimizer`, including the move to `/Users/victor/workspace/victor/pi-context-optimizer`.
 3. Improve persistence, edit safety, and compaction controls.
-4. Analyze RTK itself, its implementation model, and the practical tradeoffs for prompt caching and cross-model handoffs.
+4. RTK architecture, prompt caching, and model handoff tradeoffs are documented in `docs/rtk-architecture-prompt-caching-and-model-handoffs.md`.
 5. Original-source comparison path: abandoned. We do not care about this path anymore.
 
 ## Current decisions
