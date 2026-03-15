@@ -162,6 +162,7 @@ Release workflow summary:
 
 - [Current implementation and RTK in practice](docs/current-implementation-and-rtk-in-practice.md)
 - [RTK architecture, prompt caching, and model handoffs](docs/rtk-architecture-prompt-caching-and-model-handoffs.md)
+- [RTK optimization history and replay plan](docs/rtk-optimization-history-and-replay-plan.md)
 - [Roadmap](ROADMAP.md)
 
 ## Credits and prior art
