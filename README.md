@@ -107,6 +107,14 @@ This extension uses Pi extension events directly:
 
 ## Development
 
+Install dependencies to set up Husky and the `commit-msg` commitlint hook:
+
+```bash
+npm install
+```
+
+Validation commands:
+
 ```bash
 bunx tsc -p tsconfig.json
 bun ./src/output-compactor-test.ts
@@ -117,6 +125,21 @@ bun ./src/config-modal-test.ts
 bun ./src/index-test.ts
 bun run build:check
 ```
+
+## Release automation
+
+This repository uses:
+
+- `semantic-release` for versioning, tags, GitHub releases, and npm publishing
+- npm trusted publishing from GitHub Actions
+- commitlint plus Husky to enforce Conventional Commits locally
+
+Release workflow summary:
+
+1. merge Conventional Commit-based changes to `main`
+2. GitHub Actions runs `semantic-release`
+3. `semantic-release` determines the next version from commit history
+4. GitHub release and npm publish happen from the release workflow
 
 ## Documentation
 

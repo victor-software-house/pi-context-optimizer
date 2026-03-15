@@ -52,8 +52,9 @@ This document outlines the steps to adapt and harden the original `pi-rtk-optimi
     -   [ ] Add specific tests for shell piping, structured JSON output (`gh --json`), and interactive shell bypasses.
 
 3.  **Release Automation:**
-    -   [x] Implement `release-please` for automated changelog generation, version bumping, tags, and GitHub releases.
-    -   [x] Add tag-driven npm trusted publishing automation.
+    -   [x] Implement `semantic-release` for automated versioning, tags, GitHub releases, and npm publish from GitHub Actions.
+    -   [x] Add npm trusted publishing automation for the release workflow.
+    -   [x] Add commitlint-based Conventional Commit enforcement through a `commit-msg` hook.
     -   [ ] Create GitHub issue templates for bug reports, especially for command rewrite parity regressions.
 
 ## Phase 4: Repository Independence

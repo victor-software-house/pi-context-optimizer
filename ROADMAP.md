@@ -45,4 +45,4 @@
 - Persist metrics across restarts when useful.
 - Expand compatibility coverage for macOS, Linux, and Windows.
 - Add issue templates.
-- Maintain the automated release pipeline (`release-please` plus tag-driven npm trusted publishing) as the project evolves.
+- Maintain the automated release pipeline (`semantic-release` plus npm trusted publishing) and Conventional Commit enforcement as the project evolves.

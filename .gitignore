@@ -6,4 +6,5 @@ coverage/
 config.json
 *.tmp
 .firecrawl/
+.husky/_/
 .pi-rtk-optimizer-check.mjs
