@@ -26,7 +26,7 @@ Before making changes, read these files in this order:
 
 ## Dev environment
 
-- Local path: `/Users/victor/workspace/victor/pi-context-optimizer`
+- Local workspace project: `pi-context-optimizer`
 - Package name: `@victor-software-house/pi-context-optimizer`
 - Runtime target: Node.js `>=20`
 - Use `bunx` for ad hoc TypeScript validation commands.
