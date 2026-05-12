@@ -16,14 +16,15 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "bunx tsc -p tsconfig.json --noCheck",
-    "lint": "npm run build",
-    "typecheck": "bunx tsc -p tsconfig.json",
-    "test": "bun ./src/output-compactor-test.ts && bun ./src/command-rewriter-test.ts && bun ./src/runtime-guard-test.ts && bun ./src/additional-coverage-test.ts && bun ./src/config-modal-test.ts && bun ./src/index-test.ts",
-    "check": "npm run lint && npm run typecheck && npm run test",
-    "build:check": "bunx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-context-optimizer-check.mjs --external:@mariozechner/pi-coding-agent --external:@mariozechner/pi-tui && bun -e \"import { unlinkSync } from 'node:fs'; unlinkSync('./.pi-context-optimizer-check.mjs');\"",
+    "build": "pnpm dlx tsc -p tsconfig.json --noCheck",
+    "lint": "pnpm run build",
+    "typecheck": "pnpm dlx tsc -p tsconfig.json",
+    "test": "pnpm exec bun ./src/output-compactor-test.ts && pnpm exec bun ./src/command-rewriter-test.ts && pnpm exec bun ./src/runtime-guard-test.ts && pnpm exec bun ./src/additional-coverage-test.ts && pnpm exec bun ./src/config-modal-test.ts && pnpm exec bun ./src/index-test.ts",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "build:check": "pnpm dlx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-context-optimizer-check.mjs --external:@earendil-works/pi-coding-agent --external:@earendil-works/pi-tui && node -e \"require('node:fs').unlinkSync('./.pi-context-optimizer-check.mjs')\"",
     "prepare": "lefthook install",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "prepublishOnly": "pnpm run check"
   },
   "keywords": [
     "pi-package",
@@ -49,7 +50,7 @@
   },
   "homepage": "https://github.com/victor-software-house/pi-context-optimizer#readme",
   "engines": {
-    "node": ">=20"
+    "node": ">=24.0.0"
   },
   "publishConfig": {
     "access": "public"
@@ -60,13 +61,14 @@
     ]
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "@mariozechner/pi-tui": "*"
+    "@earendil-works/pi-coding-agent": ">=0.74.0",
+    "@earendil-works/pi-tui": ">=0.74.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.4",
     "@commitlint/config-conventional": "^20.4.4",
     "lefthook": "^2.1.4",
     "semantic-release": "^25.0.3"
-  }
+  },
+  "packageManager": "pnpm@11.1.1"
 }
