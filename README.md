@@ -71,12 +71,12 @@ Preferred install method:
 pi install npm:@victor-software-house/pi-context-optimizer
 ```
 
-Current published version: `1.0.0`
+Current published version: `1.0.1`
 
 Pin a specific version when needed:
 
 ```bash
-pi install npm:@victor-software-house/pi-context-optimizer@1.0.0
+pi install npm:@victor-software-house/pi-context-optimizer@1.0.1
 ```
 
 ### Git installation

@@ -60,8 +60,8 @@ function lastNotification(notifications: Notification[]): Notification {
 runTest("command completions return top-level and filtered RTK subcommands", () => {
 	const topLevel = getRtkArgumentCompletions("");
 	assert.ok(Array.isArray(topLevel));
-	assert.ok(topLevel.some((item) => item.value === "show"));
-	assert.ok(topLevel.some((item) => item.value === "clear-stats"));
+	assert.ok(topLevel!.some((item) => item.value === "show"));
+	assert.ok(topLevel!.some((item) => item.value === "clear-stats"));
 
 	const filtered = getRtkArgumentCompletions("st");
 	assert.deepEqual(

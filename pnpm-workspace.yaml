@@ -4,3 +4,4 @@ allowBuilds:
   lefthook: true
   protobufjs: true
   "@vscode/ripgrep": true
+  bun: true

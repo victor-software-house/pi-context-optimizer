@@ -176,8 +176,10 @@ declare module "node:os" {
 }
 
 declare module "node:path" {
+	export const sep: string;
 	export function join(...segments: string[]): string;
 	export function dirname(path: string): string;
+	export function resolve(...segments: string[]): string;
 }
 
 declare module "node:fs" {

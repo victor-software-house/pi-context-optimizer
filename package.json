@@ -1,6 +1,6 @@
 {
   "name": "@victor-software-house/pi-context-optimizer",
-  "version": "0.4.1",
+  "version": "1.0.1",
   "description": "Pi extension for command rewriting and tool-output compaction optimization.",
   "type": "module",
   "main": "./index.ts",
@@ -16,12 +16,13 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm dlx tsc -p tsconfig.json --noCheck",
+    "build": "pnpm exec tsc -p tsconfig.json --noCheck",
     "lint": "pnpm run build",
-    "typecheck": "pnpm dlx tsc -p tsconfig.json",
+    "typecheck": "pnpm exec tsc -p tsconfig.json",
     "test": "pnpm exec bun ./src/output-compactor-test.ts && pnpm exec bun ./src/command-rewriter-test.ts && pnpm exec bun ./src/runtime-guard-test.ts && pnpm exec bun ./src/additional-coverage-test.ts && pnpm exec bun ./src/config-modal-test.ts && pnpm exec bun ./src/index-test.ts",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
-    "build:check": "pnpm dlx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-context-optimizer-check.mjs --external:@earendil-works/pi-coding-agent --external:@earendil-works/pi-tui && node -e \"require('node:fs').unlinkSync('./.pi-context-optimizer-check.mjs')\"",
+    "check": "pnpm run verify",
+    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "build:check": "pnpm dlx esbuild ./index.ts --bundle --platform=node --format=esm --outfile=./.pi-context-optimizer-check.mjs --external:@earendil-works/pi-coding-agent --external:@earendil-works/pi-tui --external:@mariozechner/pi-coding-agent --external:@mariozechner/pi-tui && node -e \"require('node:fs').unlinkSync('./.pi-context-optimizer-check.mjs')\"",
     "prepare": "lefthook install",
     "commitlint": "commitlint --edit",
     "prepublishOnly": "pnpm run check"
@@ -53,7 +54,8 @@
     "node": ">=24.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "pi": {
     "extensions": [
@@ -67,8 +69,16 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.4",
     "@commitlint/config-conventional": "^20.4.4",
+    "bun": "^1.3.3",
     "lefthook": "^2.1.4",
-    "semantic-release": "^25.0.3"
+    "semantic-release": "^25.0.3",
+    "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@11.1.1"
+  "packageManager": "pnpm@11.1.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bun",
+      "lefthook"
+    ]
+  }
 }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-05-12
+
+### Fixed
+- Reconciled package metadata with the private Victor Software House GitHub Packages baseline.
+- Updated `package.json` to the currently maintained package line and set `publishConfig.registry` to `https://npm.pkg.github.com` with restricted access.
+- Added the VSH-standard `verify` script, made `prepublishOnly` use it, and pinned local TypeScript/Bun dev tooling so validation does not depend on broken global shims.
+- Updated README install examples to the current package version.
+
 ## [1.0.0] - 2026-03-15
 
 ### Added
