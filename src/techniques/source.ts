@@ -36,10 +36,31 @@ interface CommentPatterns {
 }
 
 const COMMENT_PATTERNS: Record<Language, CommentPatterns> = {
-	typescript: { line: "//", blockStart: "/*", blockEnd: "*/", docBlockStart: "/**" },
-	javascript: { line: "//", blockStart: "/*", blockEnd: "*/", docBlockStart: "/**" },
-	python: { line: "#", blockStart: '"""', blockEnd: '"""', docBlockStart: '"""' },
-	rust: { line: "//", blockStart: "/*", blockEnd: "*/", docLine: "///", docBlockStart: "/**" },
+	typescript: {
+		line: "//",
+		blockStart: "/*",
+		blockEnd: "*/",
+		docBlockStart: "/**",
+	},
+	javascript: {
+		line: "//",
+		blockStart: "/*",
+		blockEnd: "*/",
+		docBlockStart: "/**",
+	},
+	python: {
+		line: "#",
+		blockStart: '"""',
+		blockEnd: '"""',
+		docBlockStart: '"""',
+	},
+	rust: {
+		line: "//",
+		blockStart: "/*",
+		blockEnd: "*/",
+		docLine: "///",
+		docBlockStart: "/**",
+	},
 	go: { line: "//", blockStart: "/*", blockEnd: "*/", docBlockStart: "/**" },
 	java: { line: "//", blockStart: "/*", blockEnd: "*/", docBlockStart: "/**" },
 	c: { line: "//", blockStart: "/*", blockEnd: "*/", docBlockStart: "/**" },
@@ -48,7 +69,8 @@ const COMMENT_PATTERNS: Record<Language, CommentPatterns> = {
 };
 
 const IMPORT_PATTERN = /^(use\s+|import\s+|from\s+|require\(|#include)/;
-const SIGNATURE_PATTERN = /^(pub\s+)?(async\s+)?(fn|def|function|func|class|struct|enum|trait|interface|type)\s+\w+/;
+const SIGNATURE_PATTERN =
+	/^(pub\s+)?(async\s+)?(fn|def|function|func|class|struct|enum|trait|interface|type)\s+\w+/;
 const CONST_PATTERN = /^(const|static|let|pub\s+const|pub\s+static)\s+/;
 
 export function detectLanguage(filePath: string): Language {
@@ -73,8 +95,10 @@ export function filterMinimal(content: string, language: Language): string {
 
 	for (const line of lines) {
 		const trimmed = line.trim();
-		const isUserscriptMetadataStart = userscriptMetadataStartPattern.test(trimmed);
-		const isUserscriptMetadataContent = userscriptMetadataContentPattern.test(trimmed);
+		const isUserscriptMetadataStart =
+			userscriptMetadataStartPattern.test(trimmed);
+		const isUserscriptMetadataContent =
+			userscriptMetadataContentPattern.test(trimmed);
 		const isUserscriptMetadataEnd = userscriptMetadataEndPattern.test(trimmed);
 
 		if (isUserscriptMetadataStart) {
@@ -171,7 +195,10 @@ export function filterAggressive(content: string, language: Language): string {
 			braceDepth += openBraces;
 			braceDepth -= closeBraces;
 
-			if (braceDepth <= 1 && (trimmed === "{" || trimmed === "}" || trimmed.endsWith("{"))) {
+			if (
+				braceDepth <= 1 &&
+				(trimmed === "{" || trimmed === "}" || trimmed.endsWith("{"))
+			) {
 				result.push(line);
 			}
 
@@ -192,7 +219,11 @@ export function filterAggressive(content: string, language: Language): string {
 	return result.join("\n").trim();
 }
 
-export function smartTruncate(content: string, maxLines: number, _language: Language): string {
+export function smartTruncate(
+	content: string,
+	maxLines: number,
+	_language: Language,
+): string {
 	const lines = content.split("\n");
 	if (lines.length <= maxLines) {
 		return content;
@@ -229,7 +260,9 @@ export function smartTruncate(content: string, maxLines: number, _language: Lang
 	}
 
 	if (skippedSection || keptLines < lines.length) {
-		result.push(`// ... ${lines.length - keptLines} more lines (total: ${lines.length})`);
+		result.push(
+			`// ... ${lines.length - keptLines} more lines (total: ${lines.length})`,
+		);
 	}
 
 	return result.join("\n");

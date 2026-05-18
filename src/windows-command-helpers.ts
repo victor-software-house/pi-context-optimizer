@@ -20,8 +20,13 @@ function quoteForBash(value: string): string {
 	return `"${escaped}"`;
 }
 
-function rewriteLeadingCdSlashD(command: string): { command: string; changed: boolean } {
-	const withTailMatch = command.match(/^\s*cd\s+\/d\s+(.+?)\s*&&\s*([\s\S]+)$/i);
+function rewriteLeadingCdSlashD(command: string): {
+	command: string;
+	changed: boolean;
+} {
+	const withTailMatch = command.match(
+		/^\s*cd\s+\/d\s+(.+?)\s*&&\s*([\s\S]+)$/i,
+	);
 	if (withTailMatch) {
 		const rawPath = withTailMatch[1] ?? "";
 		const tail = withTailMatch[2] ?? "";
@@ -45,7 +50,10 @@ function rewriteLeadingCdSlashD(command: string): { command: string; changed: bo
 	return { command, changed: false };
 }
 
-function ensurePythonUtf8(command: string): { command: string; changed: boolean } {
+function ensurePythonUtf8(command: string): {
+	command: string;
+	changed: boolean;
+} {
 	if (/\bPYTHONIOENCODING\s*=/.test(command)) {
 		return { command, changed: false };
 	}
@@ -60,7 +68,9 @@ function ensurePythonUtf8(command: string): { command: string; changed: boolean 
 	};
 }
 
-export function applyWindowsBashCompatibilityFixes(command: string): WindowsBashCompatibilityResult {
+export function applyWindowsBashCompatibilityFixes(
+	command: string,
+): WindowsBashCompatibilityResult {
 	if (process.platform !== "win32") {
 		return { command, applied: [] };
 	}

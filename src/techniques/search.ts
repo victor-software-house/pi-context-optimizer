@@ -6,7 +6,10 @@ interface SearchResult {
 	content: string;
 }
 
-export function groupSearchResults(output: string, maxResults = 50): string | null {
+export function groupSearchResults(
+	output: string,
+	maxResults = 50,
+): string | null {
 	const results: SearchResult[] = [];
 	for (const line of output.split("\n")) {
 		if (!line.trim()) {

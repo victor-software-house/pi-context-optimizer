@@ -8,7 +8,9 @@ interface ProducerRewritePlan {
 	captureStderr: boolean;
 }
 
-function isTopLevelQuoteCharacter(character: string): character is '"' | "'" | "`" {
+function isTopLevelQuoteCharacter(
+	character: string,
+): character is '"' | "'" | "`" {
 	return character === '"' || character === "'" || character === "`";
 }
 
@@ -69,7 +71,12 @@ function parseSimpleTopLevelPipeline(command: string): ParsedPipeline | null {
 			return null;
 		}
 
-		if (character === "&" && nextCharacter !== ">" && previousCharacter !== ">" && previousCharacter !== "<") {
+		if (
+			character === "&" &&
+			nextCharacter !== ">" &&
+			previousCharacter !== ">" &&
+			previousCharacter !== "<"
+		) {
 			return null;
 		}
 
@@ -86,7 +93,10 @@ function parseSimpleTopLevelPipeline(command: string): ParsedPipeline | null {
 	return { segments, separators };
 }
 
-function extractProducerRewritePlan(segment: string, firstSeparator: string): ProducerRewritePlan | null {
+function extractProducerRewritePlan(
+	segment: string,
+	firstSeparator: string,
+): ProducerRewritePlan | null {
 	const trimmed = segment.trim();
 	if (!/^rtk\s+/i.test(trimmed)) {
 		return null;
@@ -110,7 +120,9 @@ function buildBufferedPipelineCommand(
 ): string {
 	const tempFileVariable = "__pi_rtk_pipe_tmp";
 	const statusVariable = "__pi_rtk_pipe_status";
-	const producerRedirect = producer.captureStderr ? `> "$${tempFileVariable}" 2>&1` : `> "$${tempFileVariable}"`;
+	const producerRedirect = producer.captureStderr
+		? `> "$${tempFileVariable}" 2>&1`
+		: `> "$${tempFileVariable}"`;
 	const cleanupTrap = `rm -f "$${tempFileVariable}"`;
 
 	return [
@@ -126,7 +138,9 @@ function buildBufferedPipelineCommand(
 	].join(" ");
 }
 
-export function applyRewrittenCommandShellSafetyFixups(command: string): string {
+export function applyRewrittenCommandShellSafetyFixups(
+	command: string,
+): string {
 	if (process.platform !== "win32") {
 		return command;
 	}
@@ -136,14 +150,20 @@ export function applyRewrittenCommandShellSafetyFixups(command: string): string 
 		return command;
 	}
 
-	const producer = extractProducerRewritePlan(parsedPipeline.segments[0] ?? "", parsedPipeline.separators[0] ?? "");
+	const producer = extractProducerRewritePlan(
+		parsedPipeline.segments[0] ?? "",
+		parsedPipeline.separators[0] ?? "",
+	);
 	if (!producer) {
 		return command;
 	}
 
 	const remainder = parsedPipeline.segments
 		.slice(1)
-		.map((segment, index) => `${index === 0 ? "" : (parsedPipeline.separators[index] ?? "")}${segment}`)
+		.map(
+			(segment, index) =>
+				`${index === 0 ? "" : (parsedPipeline.separators[index] ?? "")}${segment}`,
+		)
 		.join("")
 		.trim();
 	if (!remainder) {

@@ -30,7 +30,9 @@ function mapCompletions(values: CompletionDefinition[]): AutocompleteItem[] {
 	}));
 }
 
-export function getRtkArgumentCompletions(argumentPrefix: string): AutocompleteItem[] | null {
+export function getRtkArgumentCompletions(
+	argumentPrefix: string,
+): AutocompleteItem[] | null {
 	const normalized = argumentPrefix.trimStart().toLowerCase();
 	if (!normalized) {
 		return mapCompletions(TOP_LEVEL_SUBCOMMANDS);
@@ -40,7 +42,9 @@ export function getRtkArgumentCompletions(argumentPrefix: string): AutocompleteI
 		return null;
 	}
 
-	const filtered = TOP_LEVEL_SUBCOMMANDS.filter((entry) => startsWithFilter(entry.name, normalized));
+	const filtered = TOP_LEVEL_SUBCOMMANDS.filter((entry) =>
+		startsWithFilter(entry.name, normalized),
+	);
 	if (filtered.length === 0) {
 		return null;
 	}

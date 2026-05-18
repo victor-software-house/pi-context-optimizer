@@ -56,7 +56,10 @@ export function isBuildCommand(command: string | undefined | null): boolean {
 	return matchesCommandPatterns(command, BUILD_COMMAND_PATTERNS);
 }
 
-export function filterBuildOutput(output: string, command: string | undefined | null): string | null {
+export function filterBuildOutput(
+	output: string,
+	command: string | undefined | null,
+): string | null {
 	if (!isBuildCommand(command)) {
 		return null;
 	}

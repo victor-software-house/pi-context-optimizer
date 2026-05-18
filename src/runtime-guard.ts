@@ -10,5 +10,8 @@ export function shouldSkipCommandHandlingWhenRtkMissing(
 	config: Pick<RtkIntegrationConfig, "mode" | "guardWhenRtkMissing">,
 	runtimeStatus: Pick<RuntimeStatus, "rtkAvailable">,
 ): boolean {
-	return shouldRequireRtkAvailabilityForCommandHandling(config) && !runtimeStatus.rtkAvailable;
+	return (
+		shouldRequireRtkAvailabilityForCommandHandling(config) &&
+		!runtimeStatus.rtkAvailable
+	);
 }

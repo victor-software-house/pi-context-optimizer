@@ -1,5 +1,9 @@
 export const RTK_MODES = ["rewrite", "suggest", "compact-only"] as const;
-export const RTK_SOURCE_FILTER_LEVELS = ["none", "minimal", "aggressive"] as const;
+export const RTK_SOURCE_FILTER_LEVELS = [
+	"none",
+	"minimal",
+	"aggressive",
+] as const;
 
 export type RtkMode = (typeof RTK_MODES)[number];
 export type RtkSourceFilterLevel = (typeof RTK_SOURCE_FILTER_LEVELS)[number];
@@ -100,4 +104,3 @@ export interface RuntimeStatus {
 	lastCheckedAt?: number;
 	lastError?: string;
 }
-

@@ -5,7 +5,8 @@ import { runTest } from "./test-helpers.ts";
 
 mock.module("@mariozechner/pi-coding-agent", () => ({
 	getSettingsListTheme: () => ({}),
-	isToolCallEventType: (toolName: string, event: Record<string, unknown>) => event.toolName === toolName,
+	isToolCallEventType: (toolName: string, event: Record<string, unknown>) =>
+		event.toolName === toolName,
 }));
 
 mock.module("@mariozechner/pi-tui", () => ({
@@ -44,11 +45,14 @@ runTest("bounded notice tracker evicts old entries and supports reset", () => {
 	assert.equal(tracker.remember("third"), true);
 });
 
-runTest("bounded notice tracker coerces invalid limits to a safe minimum", () => {
-	const tracker = createBoundedNoticeTracker(0);
-	assert.equal(tracker.remember("alpha"), true);
-	assert.equal(tracker.remember("beta"), true);
-	assert.equal(tracker.remember("alpha"), true);
-});
+runTest(
+	"bounded notice tracker coerces invalid limits to a safe minimum",
+	() => {
+		const tracker = createBoundedNoticeTracker(0);
+		assert.equal(tracker.remember("alpha"), true);
+		assert.equal(tracker.remember("beta"), true);
+		assert.equal(tracker.remember("alpha"), true);
+	},
+);
 
 console.log("All index tests passed.");

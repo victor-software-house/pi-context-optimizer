@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	renameSync,
+	unlinkSync,
+	writeFileSync,
+} from "node:fs";
 import { dirname } from "node:path";
 import { CONFIG_PATH } from "./constants.js";
 import {
@@ -16,7 +23,12 @@ function toBoolean(value: unknown, fallback: boolean): boolean {
 	return typeof value === "boolean" ? value : fallback;
 }
 
-function toInteger(value: unknown, fallback: number, min: number, max: number): number {
+function toInteger(
+	value: unknown,
+	fallback: number,
+	min: number,
+	max: number,
+): number {
 	if (typeof value !== "number" || !Number.isFinite(value)) {
 		return fallback;
 	}
@@ -43,7 +55,9 @@ function toObject(value: unknown): Record<string, unknown> {
 	return value as Record<string, unknown>;
 }
 
-export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfig {
+export function normalizeRtkIntegrationConfig(
+	raw: unknown,
+): RtkIntegrationConfig {
 	const source = toObject(raw);
 	const outputCompactionSource = toObject(source.outputCompaction);
 	const truncateSource = toObject(outputCompactionSource.truncate);
@@ -68,18 +82,30 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 			source.rewriteFilesystem,
 			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteFilesystem,
 		),
-		rewriteRust: toBoolean(source.rewriteRust, DEFAULT_RTK_INTEGRATION_CONFIG.rewriteRust),
+		rewriteRust: toBoolean(
+			source.rewriteRust,
+			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteRust,
+		),
 		rewriteJavaScript: toBoolean(
 			source.rewriteJavaScript,
 			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteJavaScript,
 		),
-		rewritePython: toBoolean(source.rewritePython, DEFAULT_RTK_INTEGRATION_CONFIG.rewritePython),
-		rewriteGo: toBoolean(source.rewriteGo, DEFAULT_RTK_INTEGRATION_CONFIG.rewriteGo),
+		rewritePython: toBoolean(
+			source.rewritePython,
+			DEFAULT_RTK_INTEGRATION_CONFIG.rewritePython,
+		),
+		rewriteGo: toBoolean(
+			source.rewriteGo,
+			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteGo,
+		),
 		rewriteContainers: toBoolean(
 			source.rewriteContainers,
 			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteContainers,
 		),
-		rewriteNetwork: toBoolean(source.rewriteNetwork, DEFAULT_RTK_INTEGRATION_CONFIG.rewriteNetwork),
+		rewriteNetwork: toBoolean(
+			source.rewriteNetwork,
+			DEFAULT_RTK_INTEGRATION_CONFIG.rewriteNetwork,
+		),
 		rewritePackageManagers: toBoolean(
 			source.rewritePackageManagers,
 			DEFAULT_RTK_INTEGRATION_CONFIG.rewritePackageManagers,
@@ -95,7 +121,8 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 			),
 			sourceCodeFilteringEnabled: toBoolean(
 				outputCompactionSource.sourceCodeFilteringEnabled,
-				DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction.sourceCodeFilteringEnabled,
+				DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction
+					.sourceCodeFilteringEnabled,
 			),
 			preserveExactSkillReads: toBoolean(
 				outputCompactionSource.preserveExactSkillReads,
@@ -113,7 +140,9 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 					200_000,
 				),
 			},
-			sourceCodeFiltering: toSourceFilterLevel(outputCompactionSource.sourceCodeFiltering),
+			sourceCodeFiltering: toSourceFilterLevel(
+				outputCompactionSource.sourceCodeFiltering,
+			),
 			smartTruncate: {
 				enabled: toBoolean(
 					smartTruncateSource.enabled,
@@ -121,7 +150,8 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 				),
 				maxLines: toInteger(
 					smartTruncateSource.maxLines,
-					DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction.smartTruncate.maxLines,
+					DEFAULT_RTK_INTEGRATION_CONFIG.outputCompaction.smartTruncate
+						.maxLines,
 					40,
 					4_000,
 				),
@@ -154,14 +184,20 @@ export function normalizeRtkIntegrationConfig(raw: unknown): RtkIntegrationConfi
 	};
 }
 
-export function ensureConfigExists(configPath = CONFIG_PATH): EnsureConfigResult {
+export function ensureConfigExists(
+	configPath = CONFIG_PATH,
+): EnsureConfigResult {
 	if (existsSync(configPath)) {
 		return { created: false };
 	}
 
 	try {
 		mkdirSync(dirname(configPath), { recursive: true });
-		writeFileSync(configPath, `${JSON.stringify(DEFAULT_RTK_INTEGRATION_CONFIG, null, 2)}\n`, "utf-8");
+		writeFileSync(
+			configPath,
+			`${JSON.stringify(DEFAULT_RTK_INTEGRATION_CONFIG, null, 2)}\n`,
+			"utf-8",
+		);
 		return { created: true };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
@@ -172,7 +208,9 @@ export function ensureConfigExists(configPath = CONFIG_PATH): EnsureConfigResult
 	}
 }
 
-export function loadRtkIntegrationConfig(configPath = CONFIG_PATH): ConfigLoadResult {
+export function loadRtkIntegrationConfig(
+	configPath = CONFIG_PATH,
+): ConfigLoadResult {
 	if (!existsSync(configPath)) {
 		return { config: { ...DEFAULT_RTK_INTEGRATION_CONFIG } };
 	}

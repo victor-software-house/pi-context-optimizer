@@ -11,24 +11,39 @@ function runtimeStatus(rtkAvailable: boolean): RuntimeStatus {
 	return { rtkAvailable };
 }
 
-runTest("rewrite mode still requires RTK availability when guard is enabled", () => {
-	const config = cloneDefaultConfig();
-	config.mode = "rewrite";
-	config.guardWhenRtkMissing = true;
+runTest(
+	"rewrite mode still requires RTK availability when guard is enabled",
+	() => {
+		const config = cloneDefaultConfig();
+		config.mode = "rewrite";
+		config.guardWhenRtkMissing = true;
 
-	assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), true);
-	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), true);
-	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(true)), false);
-});
+		assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), true);
+		assert.equal(
+			shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)),
+			true,
+		);
+		assert.equal(
+			shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(true)),
+			false,
+		);
+	},
+);
 
-runTest("suggest mode does not suppress suggestions when RTK is missing", () => {
-	const config = cloneDefaultConfig();
-	config.mode = "suggest";
-	config.guardWhenRtkMissing = true;
+runTest(
+	"suggest mode does not suppress suggestions when RTK is missing",
+	() => {
+		const config = cloneDefaultConfig();
+		config.mode = "suggest";
+		config.guardWhenRtkMissing = true;
 
-	assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), false);
-	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), false);
-});
+		assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), false);
+		assert.equal(
+			shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)),
+			false,
+		);
+	},
+);
 
 runTest("compact-only mode does not require RTK availability", () => {
 	const config = cloneDefaultConfig();
@@ -36,7 +51,10 @@ runTest("compact-only mode does not require RTK availability", () => {
 	config.guardWhenRtkMissing = true;
 
 	assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), false);
-	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), false);
+	assert.equal(
+		shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)),
+		false,
+	);
 });
 
 runTest("guard disabled never blocks command handling", () => {
@@ -45,7 +63,10 @@ runTest("guard disabled never blocks command handling", () => {
 	config.guardWhenRtkMissing = false;
 
 	assert.equal(shouldRequireRtkAvailabilityForCommandHandling(config), false);
-	assert.equal(shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)), false);
+	assert.equal(
+		shouldSkipCommandHandlingWhenRtkMissing(config, runtimeStatus(false)),
+		false,
+	);
 });
 
 console.log("All runtime-guard tests passed.");

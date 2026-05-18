@@ -28,7 +28,22 @@ function firstTextBlock(content: unknown[] | undefined): string {
 	return first.text;
 }
 
-const OUTPUT_EMOJI_MARKERS = ["✓", "✔", "❌", "⚠️", "⚠", "📋", "📄", "🔍", "✅", "⏭️", "📌", "📝", "❓", "•"];
+const OUTPUT_EMOJI_MARKERS = [
+	"✓",
+	"✔",
+	"❌",
+	"⚠️",
+	"⚠",
+	"📋",
+	"📄",
+	"🔍",
+	"✅",
+	"⏭️",
+	"📌",
+	"📝",
+	"❓",
+	"•",
+];
 
 function compactBashOutput(command: string, text: string): string {
 	const result = compactToolResult(
@@ -60,30 +75,37 @@ function compactGrepOutput(text: string): string {
 
 function assertNoOutputEmoji(text: string): void {
 	for (const marker of OUTPUT_EMOJI_MARKERS) {
-		assert.equal(text.includes(marker), false, `Unexpected output emoji marker: ${marker}`);
+		assert.equal(
+			text.includes(marker),
+			false,
+			`Unexpected output emoji marker: ${marker}`,
+		);
 	}
 }
 
-runTest("precision read with offset keeps exact output (no source/smart/hard truncation)", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.truncate.enabled = true;
-	config.outputCompaction.truncate.maxChars = 500;
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"precision read with offset keeps exact output (no source/smart/hard truncation)",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.truncate.enabled = true;
+		config.outputCompaction.truncate.maxChars = 500;
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(220);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: "sample.ts", offset: 1 },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(220);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: "sample.ts", offset: 1 },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+	},
+);
 
 runTest("precision read with limit keeps exact output", () => {
 	const config = cloneDefaultConfig();
@@ -146,132 +168,165 @@ runTest("short read output stays exact below threshold", () => {
 	assert.deepEqual(result.techniques, []);
 });
 
-runTest("read output stays exact at the 80-line boundary with trailing newline", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"read output stays exact at the 80-line boundary with trailing newline",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(80);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: "sample.ts" },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(80);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: "sample.ts" },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+	},
+);
 
-runTest("read output compacts once the content exceeds the 80-line exactness threshold", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"read output compacts once the content exceeds the 80-line exactness threshold",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(81);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: "sample.ts" },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(81);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: "sample.ts" },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, true);
-	assert.ok(result.techniques.includes("source:minimal") || result.techniques.includes("smart-truncate"));
-});
+		assert.equal(result.changed, true);
+		assert.ok(
+			result.techniques.includes("source:minimal") ||
+				result.techniques.includes("smart-truncate"),
+		);
+	},
+);
 
-runTest("source file reads skip lossy source filtering when truncation safeguards are not needed", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.smartTruncate.enabled = false;
-	config.outputCompaction.truncate.enabled = false;
+runTest(
+	"source file reads skip lossy source filtering when truncation safeguards are not needed",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.smartTruncate.enabled = false;
+		config.outputCompaction.truncate.enabled = false;
 
-	const content = buildReadContent(120);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: "sample.ts" },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(120);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: "sample.ts" },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-	assert.equal(firstTextBlock(result.content), "");
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+		assert.equal(firstTextBlock(result.content), "");
+	},
+);
 
-runTest("skill reads stay exact when preserveExactSkillReads is enabled for user skills", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.preserveExactSkillReads = true;
-	config.outputCompaction.truncate.enabled = true;
-	config.outputCompaction.truncate.maxChars = 500;
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"skill reads stay exact when preserveExactSkillReads is enabled for user skills",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.preserveExactSkillReads = true;
+		config.outputCompaction.truncate.enabled = true;
+		config.outputCompaction.truncate.maxChars = 500;
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(220);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: join(homedir(), ".pi", "agent", "skills", "example", "SKILL.md") },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(220);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: {
+					path: join(
+						homedir(),
+						".pi",
+						"agent",
+						"skills",
+						"example",
+						"SKILL.md",
+					),
+				},
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+	},
+);
 
-runTest("project .pi skill reads stay exact when preserveExactSkillReads is enabled", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.preserveExactSkillReads = true;
-	config.outputCompaction.truncate.enabled = true;
-	config.outputCompaction.truncate.maxChars = 500;
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"project .pi skill reads stay exact when preserveExactSkillReads is enabled",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.preserveExactSkillReads = true;
+		config.outputCompaction.truncate.enabled = true;
+		config.outputCompaction.truncate.maxChars = 500;
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(220);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: ".pi/skills/example/SKILL.md" },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(220);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: ".pi/skills/example/SKILL.md" },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+	},
+);
 
-runTest("ancestor .agents skill reads stay exact when preserveExactSkillReads is enabled", () => {
-	const config = cloneDefaultConfig();
-	config.outputCompaction.preserveExactSkillReads = true;
-	config.outputCompaction.truncate.enabled = true;
-	config.outputCompaction.truncate.maxChars = 500;
-	config.outputCompaction.smartTruncate.enabled = true;
-	config.outputCompaction.smartTruncate.maxLines = 40;
+runTest(
+	"ancestor .agents skill reads stay exact when preserveExactSkillReads is enabled",
+	() => {
+		const config = cloneDefaultConfig();
+		config.outputCompaction.preserveExactSkillReads = true;
+		config.outputCompaction.truncate.enabled = true;
+		config.outputCompaction.truncate.maxChars = 500;
+		config.outputCompaction.smartTruncate.enabled = true;
+		config.outputCompaction.smartTruncate.maxLines = 40;
 
-	const content = buildReadContent(220);
-	const result = compactToolResult(
-		{
-			toolName: "read",
-			input: { path: "../.agents/skills/example/SKILL.md" },
-			content: [{ type: "text", text: content }],
-		},
-		config,
-	);
+		const content = buildReadContent(220);
+		const result = compactToolResult(
+			{
+				toolName: "read",
+				input: { path: "../.agents/skills/example/SKILL.md" },
+				content: [{ type: "text", text: content }],
+			},
+			config,
+		);
 
-	assert.equal(result.changed, false);
-	assert.deepEqual(result.techniques, []);
-});
+		assert.equal(result.changed, false);
+		assert.deepEqual(result.techniques, []);
+	},
+);
 
 runTest("build output uses plain-text status markers", () => {
-	const compacted = compactBashOutput("npm run build", "Compiling app v0.1.0\n");
+	const compacted = compactBashOutput(
+		"npm run build",
+		"Compiling app v0.1.0\n",
+	);
 
 	assert.equal(compacted, "[OK] Build successful (1 units compiled)");
 	assertNoOutputEmoji(compacted);
@@ -323,7 +378,9 @@ runTest("test output uses plain-text labels and bullets", () => {
 });
 
 runTest("search output uses plain-text summary and file markers", () => {
-	const compacted = compactGrepOutput("src/a.ts:1:const match = true;\nsrc/b.ts:2:return match;\n");
+	const compacted = compactGrepOutput(
+		"src/a.ts:1:const match = true;\nsrc/b.ts:2:return match;\n",
+	);
 
 	assert.ok(compacted.startsWith("2 matches in 2 files:\n\n"));
 	assert.ok(compacted.includes("> src/a.ts (1 matches):\n"));

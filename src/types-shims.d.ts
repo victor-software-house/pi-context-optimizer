@@ -39,7 +39,12 @@ declare module "@mariozechner/pi-tui" {
 		constructor(...args: unknown[]);
 	}
 
-	export function truncateToWidth(text: string, width: number, suffix?: string, pad?: boolean): string;
+	export function truncateToWidth(
+		text: string,
+		width: number,
+		suffix?: string,
+		pad?: boolean,
+	): string;
 	export function visibleWidth(text: string): number;
 }
 
@@ -119,20 +124,34 @@ declare module "@mariozechner/pi-coding-agent" {
 			handler: (
 				event: { systemPrompt: string },
 				ctx: ExtensionContext,
-			) => MaybePromise<{ systemPrompt: string } | Record<string, unknown> | void>,
+			) => MaybePromise<
+				{ systemPrompt: string } | Record<string, unknown> | void
+			>,
 		): void;
 
 		on(
 			eventName: string,
-			handler: (event: Record<string, unknown>, ctx: ExtensionContext) => MaybePromise<Record<string, unknown> | void>,
+			handler: (
+				event: Record<string, unknown>,
+				ctx: ExtensionContext,
+			) => MaybePromise<Record<string, unknown> | void>,
 		): void;
 
 		registerCommand(
 			name: string,
 			definition: {
 				description: string;
-				getArgumentCompletions?: (argumentPrefix: string) => Array<{ value: string; label: string; description?: string }> | null;
-				handler: (args: string, ctx: ExtensionCommandContext) => MaybePromise<void>;
+				getArgumentCompletions?: (
+					argumentPrefix: string,
+				) => Array<{
+					value: string;
+					label: string;
+					description?: string;
+				}> | null;
+				handler: (
+					args: string,
+					ctx: ExtensionCommandContext,
+				) => MaybePromise<void>;
 			},
 		): void;
 	}
@@ -147,7 +166,6 @@ declare module "@mariozechner/pi-coding-agent" {
 		event: Record<string, unknown>,
 	): boolean;
 }
-
 
 declare module "node:assert/strict" {
 	const assert: {
@@ -184,9 +202,16 @@ declare module "node:path" {
 
 declare module "node:fs" {
 	export function existsSync(path: string): boolean;
-	export function mkdirSync(path: string, options?: { recursive?: boolean }): void;
+	export function mkdirSync(
+		path: string,
+		options?: { recursive?: boolean },
+	): void;
 	export function readFileSync(path: string, encoding: "utf-8"): string;
 	export function renameSync(oldPath: string, newPath: string): void;
 	export function unlinkSync(path: string): void;
-	export function writeFileSync(path: string, data: string, encoding: "utf-8"): void;
+	export function writeFileSync(
+		path: string,
+		data: string,
+		encoding: "utf-8",
+	): void;
 }

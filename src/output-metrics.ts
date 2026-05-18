@@ -18,7 +18,11 @@ export function trackOutputSavings(
 	const originalChars = original.length;
 	const filteredChars = filtered.length;
 	const savingsPercent =
-		originalChars > 0 ? Math.round((((originalChars - filteredChars) / originalChars) * 100) * 100) / 100 : 0;
+		originalChars > 0
+			? Math.round(
+					((originalChars - filteredChars) / originalChars) * 100 * 100,
+				) / 100
+			: 0;
 
 	const record: OutputMetricRecord = {
 		timestamp: new Date().toISOString(),
@@ -42,14 +46,28 @@ export function getOutputMetricsSummary(): string {
 		return "RTK output compaction metrics: no data yet.";
 	}
 
-	const totalOriginal = outputMetrics.reduce((sum, metric) => sum + metric.originalChars, 0);
-	const totalFiltered = outputMetrics.reduce((sum, metric) => sum + metric.filteredChars, 0);
+	const totalOriginal = outputMetrics.reduce(
+		(sum, metric) => sum + metric.originalChars,
+		0,
+	);
+	const totalFiltered = outputMetrics.reduce(
+		(sum, metric) => sum + metric.filteredChars,
+		0,
+	);
 	const totalSaved = totalOriginal - totalFiltered;
-	const savingsPercent = totalOriginal > 0 ? (totalSaved / totalOriginal) * 100 : 0;
+	const savingsPercent =
+		totalOriginal > 0 ? (totalSaved / totalOriginal) * 100 : 0;
 
-	const byTool = new Map<string, { count: number; originalChars: number; filteredChars: number }>();
+	const byTool = new Map<
+		string,
+		{ count: number; originalChars: number; filteredChars: number }
+	>();
 	for (const metric of outputMetrics) {
-		const existing = byTool.get(metric.tool) ?? { count: 0, originalChars: 0, filteredChars: 0 };
+		const existing = byTool.get(metric.tool) ?? {
+			count: 0,
+			originalChars: 0,
+			filteredChars: 0,
+		};
 		existing.count += 1;
 		existing.originalChars += metric.originalChars;
 		existing.filteredChars += metric.filteredChars;
@@ -61,7 +79,8 @@ export function getOutputMetricsSummary(): string {
 
 	for (const [tool, stats] of byTool.entries()) {
 		const toolSaved = stats.originalChars - stats.filteredChars;
-		const toolSavingsPercent = stats.originalChars > 0 ? (toolSaved / stats.originalChars) * 100 : 0;
+		const toolSavingsPercent =
+			stats.originalChars > 0 ? (toolSaved / stats.originalChars) * 100 : 0;
 		result += `- ${tool}: ${stats.count} calls, saved ${toolSaved.toLocaleString()} chars (${toolSavingsPercent.toFixed(1)}%)\n`;
 	}
 

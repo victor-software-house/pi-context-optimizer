@@ -1,4 +1,7 @@
-import { matchesCommandPatterns, normalizeCommandForDetection } from "./command-detection.js";
+import {
+	matchesCommandPatterns,
+	normalizeCommandForDetection,
+} from "./command-detection.js";
 
 const GIT_COMMAND_PATTERNS = [/^git\s+(diff|status|log|show|stash)\b/] as const;
 
@@ -205,7 +208,10 @@ export function compactLog(output: string, limit = 20): string {
 	return result.join("\n");
 }
 
-export function compactGitOutput(output: string, command: string | undefined | null): string | null {
+export function compactGitOutput(
+	output: string,
+	command: string | undefined | null,
+): string | null {
 	if (!isGitCommand(command)) {
 		return null;
 	}

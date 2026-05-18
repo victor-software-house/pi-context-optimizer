@@ -1,4 +1,7 @@
-import { matchesCommandPatterns, normalizeCommandForDetection } from "./command-detection.js";
+import {
+	matchesCommandPatterns,
+	normalizeCommandForDetection,
+} from "./command-detection.js";
 import { compactPath } from "./path-utils.js";
 
 const LINTER_COMMAND_PATTERNS = [
@@ -47,7 +50,9 @@ function parseLine(line: string): Issue | null {
 
 	const rustMatch = line.match(rustPattern);
 	if (rustMatch) {
-		const severity = (rustMatch[1]?.toUpperCase() ?? "ERROR") as "ERROR" | "WARNING";
+		const severity = (rustMatch[1]?.toUpperCase() ?? "ERROR") as
+			| "ERROR"
+			| "WARNING";
 		const message = rustMatch[2] ?? line;
 		const file = rustMatch[3] ?? "unknown";
 		const lineNumber = Number.parseInt(rustMatch[4] ?? "0", 10);
@@ -90,7 +95,10 @@ function detectLinterType(command: string | undefined | null): string {
 	return "Linter";
 }
 
-export function aggregateLinterOutput(output: string, command: string | undefined | null): string | null {
+export function aggregateLinterOutput(
+	output: string,
+	command: string | undefined | null,
+): string | null {
 	if (!isLinterCommand(command)) {
 		return null;
 	}
@@ -103,7 +111,9 @@ export function aggregateLinterOutput(output: string, command: string | undefine
 	}
 
 	const errors = issues.filter((issue) => issue.severity === "ERROR").length;
-	const warnings = issues.filter((issue) => issue.severity === "WARNING").length;
+	const warnings = issues.filter(
+		(issue) => issue.severity === "WARNING",
+	).length;
 
 	const byRule = new Map<string, number>();
 	for (const issue of issues) {

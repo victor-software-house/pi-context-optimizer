@@ -1,6 +1,10 @@
 // Vendored from ../zellij-modal/index.ts to keep pi-rtk-optimizer standalone.
 // Keep this module in sync when upstream zellij-modal primitives change.
-import { getSettingsListTheme, type ExtensionAPI, type Theme } from "@mariozechner/pi-coding-agent";
+import {
+	getSettingsListTheme,
+	type ExtensionAPI,
+	type Theme,
+} from "@mariozechner/pi-coding-agent";
 import {
 	Box,
 	Container,
@@ -277,11 +281,20 @@ export interface ZellijModalTheme {
 	/** Active palette used by this theme helper. */
 	palette: ZellijColorPalette;
 	/** Resolve color slot or explicit color into ANSI foreground/background codes. */
-	resolveColor: (color: PaletteColor | keyof ZellijColorPalette) => { fg: string; bg: string };
+	resolveColor: (color: PaletteColor | keyof ZellijColorPalette) => {
+		fg: string;
+		bg: string;
+	};
 	/** Apply foreground color to text. */
-	colorizeForeground: (color: PaletteColor | keyof ZellijColorPalette, text: string) => string;
+	colorizeForeground: (
+		color: PaletteColor | keyof ZellijColorPalette,
+		text: string,
+	) => string;
 	/** Apply background color to text. */
-	colorizeBackground: (color: PaletteColor | keyof ZellijColorPalette, text: string) => string;
+	colorizeBackground: (
+		color: PaletteColor | keyof ZellijColorPalette,
+		text: string,
+	) => string;
 }
 
 /**
@@ -329,12 +342,16 @@ export function resolveColor(color: PaletteColor): { fg: string; bg: string } {
 /**
  * Build a `ZellijModalTheme` helper from a palette.
  */
-export function createZellijModalTheme(palette: ZellijColorPalette): ZellijModalTheme {
+export function createZellijModalTheme(
+	palette: ZellijColorPalette,
+): ZellijModalTheme {
 	return {
 		palette,
 		resolveColor: (color) => resolveColor(resolvePaletteColor(color, palette)),
-		colorizeForeground: (color, text) => `${resolveColor(resolvePaletteColor(color, palette)).fg}${text}${ANSI_RESET}`,
-		colorizeBackground: (color, text) => `${resolveColor(resolvePaletteColor(color, palette)).bg}${text}${ANSI_RESET}`,
+		colorizeForeground: (color, text) =>
+			`${resolveColor(resolvePaletteColor(color, palette)).fg}${text}${ANSI_RESET}`,
+		colorizeBackground: (color, text) =>
+			`${resolveColor(resolvePaletteColor(color, palette)).bg}${text}${ANSI_RESET}`,
 	};
 }
 
@@ -370,7 +387,10 @@ export function themeToZellijPalette(theme: Theme): ZellijColorPalette {
 		warning: extract("warning", DEFAULT_ZELLIJ_PALETTE.warning),
 		border: extract("borderMuted", DEFAULT_ZELLIJ_PALETTE.border),
 		borderFocused: extract("accent", DEFAULT_ZELLIJ_PALETTE.borderFocused),
-		borderUnfocused: extract("borderMuted", DEFAULT_ZELLIJ_PALETTE.borderUnfocused),
+		borderUnfocused: extract(
+			"borderMuted",
+			DEFAULT_ZELLIJ_PALETTE.borderUnfocused,
+		),
 	};
 }
 
@@ -408,11 +428,20 @@ export class ZellijModalFrame {
 	/**
 	 * Render one content line with left/right borders.
 	 */
-	renderContentLine(content: string, width: number, palette: ZellijColorPalette): string {
+	renderContentLine(
+		content: string,
+		width: number,
+		palette: ZellijColorPalette,
+	): string {
 		const frameWidth = Math.max(2, width);
 		const innerWidth = Math.max(0, frameWidth - 2);
-		const borderColor = this.config.focused ? palette.borderFocused : palette.borderUnfocused;
-		const vertical = this.theme.colorizeForeground(borderColor, this.borders.vertical);
+		const borderColor = this.config.focused
+			? palette.borderFocused
+			: palette.borderUnfocused;
+		const vertical = this.theme.colorizeForeground(
+			borderColor,
+			this.borders.vertical,
+		);
 		const paddedContent = truncateToWidth(content, innerWidth, "", true);
 		return `${vertical}${paddedContent}${vertical}`;
 	}
@@ -420,7 +449,11 @@ export class ZellijModalFrame {
 	/**
 	 * Render complete frame around provided content lines.
 	 */
-	renderFrame(contentLines: string[], width: number, palette: ZellijColorPalette): ZellijModalRenderOutput {
+	renderFrame(
+		contentLines: string[],
+		width: number,
+		palette: ZellijColorPalette,
+	): ZellijModalRenderOutput {
 		const frameWidth = Math.max(4, width);
 		const safeContent = contentLines.length > 0 ? contentLines : [""];
 		const lines: string[] = [];
@@ -446,8 +479,11 @@ export class ZellijModalFrame {
 
 	private renderTitleBar(width: number, palette: ZellijColorPalette): string {
 		const innerWidth = Math.max(0, width - 2);
-		const borderColor = this.config.focused ? palette.borderFocused : palette.borderUnfocused;
-		const borderPaint = (text: string) => this.theme.colorizeForeground(borderColor, text);
+		const borderColor = this.config.focused
+			? palette.borderFocused
+			: palette.borderUnfocused;
+		const borderPaint = (text: string) =>
+			this.theme.colorizeForeground(borderColor, text);
 
 		if (innerWidth === 0) {
 			return `${borderPaint(this.borders.topLeft)}${borderPaint(this.borders.topRight)}`;
@@ -459,9 +495,13 @@ export class ZellijModalFrame {
 
 		for (const segment of segments) {
 			if (segment.start > cursor) {
-				inner += borderPaint(this.borders.horizontal.repeat(segment.start - cursor));
+				inner += borderPaint(
+					this.borders.horizontal.repeat(segment.start - cursor),
+				);
 			}
-			const text = segment.bold ? `\x1b[1m${segment.text}${ANSI_RESET}` : segment.text;
+			const text = segment.bold
+				? `\x1b[1m${segment.text}${ANSI_RESET}`
+				: segment.text;
 			inner += this.theme.colorizeForeground(segment.color, text);
 			cursor = segment.end;
 		}
@@ -475,8 +515,11 @@ export class ZellijModalFrame {
 
 	private renderBottomLine(width: number, palette: ZellijColorPalette): string {
 		const innerWidth = Math.max(0, width - 2);
-		const borderColor = this.config.focused ? palette.borderFocused : palette.borderUnfocused;
-		const borderPaint = (text: string) => this.theme.colorizeForeground(borderColor, text);
+		const borderColor = this.config.focused
+			? palette.borderFocused
+			: palette.borderUnfocused;
+		const borderPaint = (text: string) =>
+			this.theme.colorizeForeground(borderColor, text);
 
 		if (innerWidth === 0) {
 			return `${borderPaint(this.borders.bottomLeft)}${borderPaint(this.borders.bottomRight)}`;
@@ -488,7 +531,11 @@ export class ZellijModalFrame {
 		}
 
 		const helpSlot = this.config.helpUndertitle?.color ?? "dim";
-		const safeHelp = truncateToWidth(helpText, Math.max(0, innerWidth - 3), "…");
+		const safeHelp = truncateToWidth(
+			helpText,
+			Math.max(0, innerWidth - 3),
+			"…",
+		);
 		const helpWidth = visibleWidth(safeHelp);
 		const rightFill = Math.max(0, innerWidth - helpWidth - 3);
 
@@ -501,13 +548,20 @@ export class ZellijModalFrame {
 		}
 
 		const left = this.resolveTitleSegment(this.config.titleBar.left, "left");
-		const center = this.resolveTitleSegment(this.config.titleBar.center, "center");
+		const center = this.resolveTitleSegment(
+			this.config.titleBar.center,
+			"center",
+		);
 		const right = this.resolveTitleSegment(this.config.titleBar.right, "right");
 
 		const placements: PositionedTitleSegment[] = [];
 
 		if (left) {
-			const leftText = this.fitTextToWidth(left.text, Math.min(innerWidth, left.maxWidth ?? innerWidth), left.truncate);
+			const leftText = this.fitTextToWidth(
+				left.text,
+				Math.min(innerWidth, left.maxWidth ?? innerWidth),
+				left.truncate,
+			);
 			if (leftText) {
 				placements.push({
 					start: 0,
@@ -522,7 +576,11 @@ export class ZellijModalFrame {
 		if (right) {
 			const reservedLeft = placements[0]?.end ?? 0;
 			const available = Math.max(0, innerWidth - reservedLeft);
-			const rightText = this.fitTextToWidth(right.text, Math.min(available, right.maxWidth ?? available), right.truncate);
+			const rightText = this.fitTextToWidth(
+				right.text,
+				Math.min(available, right.maxWidth ?? available),
+				right.truncate,
+			);
 			const rightWidth = visibleWidth(rightText);
 			if (rightText && rightWidth > 0) {
 				placements.push({
@@ -536,15 +594,26 @@ export class ZellijModalFrame {
 		}
 
 		if (center) {
-			const leftLimit = placements.find((placement) => placement.start === 0)?.end ?? 0;
-			const rightStart = placements.find((placement) => placement.end === innerWidth)?.start ?? innerWidth;
+			const leftLimit =
+				placements.find((placement) => placement.start === 0)?.end ?? 0;
+			const rightStart =
+				placements.find((placement) => placement.end === innerWidth)?.start ??
+				innerWidth;
 			const freeWidth = Math.max(0, rightStart - leftLimit);
 			if (freeWidth > 0) {
-				const centerText = this.fitTextToWidth(center.text, Math.min(freeWidth, center.maxWidth ?? freeWidth), center.truncate);
+				const centerText = this.fitTextToWidth(
+					center.text,
+					Math.min(freeWidth, center.maxWidth ?? freeWidth),
+					center.truncate,
+				);
 				const centerWidth = visibleWidth(centerText);
 				if (centerText && centerWidth > 0) {
 					const centeredStart = Math.floor((innerWidth - centerWidth) / 2);
-					const start = clampInt(centeredStart, leftLimit, Math.max(leftLimit, rightStart - centerWidth));
+					const start = clampInt(
+						centeredStart,
+						leftLimit,
+						Math.max(leftLimit, rightStart - centerWidth),
+					);
 					placements.push({
 						start,
 						end: start + centerWidth,
@@ -568,7 +637,12 @@ export class ZellijModalFrame {
 		}
 
 		if (typeof segment === "string") {
-			const color: keyof ZellijColorPalette = position === "left" ? "accent" : position === "center" ? "muted" : "dim";
+			const color: keyof ZellijColorPalette =
+				position === "left"
+					? "accent"
+					: position === "center"
+						? "muted"
+						: "dim";
 			return {
 				text: ` ${segment} `,
 				color,
@@ -591,7 +665,11 @@ export class ZellijModalFrame {
 		};
 	}
 
-	private fitTextToWidth(text: string, maxWidth: number, mode: TitleSegment["truncate"]): string {
+	private fitTextToWidth(
+		text: string,
+		maxWidth: number,
+		mode: TitleSegment["truncate"],
+	): string {
 		if (maxWidth <= 0) {
 			return "";
 		}
@@ -659,7 +737,11 @@ export class ZellijModal implements ZellijModalComponent {
 	private frame: ZellijModalFrame;
 	private palette: ZellijColorPalette;
 
-	constructor(content: ZellijModalContentRenderer, config: ZellijModalConfigPartial = {}, theme?: Theme) {
+	constructor(
+		content: ZellijModalContentRenderer,
+		config: ZellijModalConfigPartial = {},
+		theme?: Theme,
+	) {
 		if (!content || typeof content.render !== "function") {
 			throw new Error("ZellijModal requires a valid content renderer.");
 		}
@@ -667,7 +749,10 @@ export class ZellijModal implements ZellijModalComponent {
 		this.config = this.buildConfig(config);
 		this.palette = theme ? themeToZellijPalette(theme) : this.config.palette;
 		this.content = content;
-		this.frame = new ZellijModalFrame({ ...this.config, palette: this.palette });
+		this.frame = new ZellijModalFrame({
+			...this.config,
+			palette: this.palette,
+		});
 	}
 
 	/**
@@ -697,7 +782,12 @@ export class ZellijModal implements ZellijModalComponent {
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			const safe = truncateToWidth(` Render error: ${message} `, paddedWidth, "…", true);
+			const safe = truncateToWidth(
+				` Render error: ${message} `,
+				paddedWidth,
+				"…",
+				true,
+			);
 			lines.push(safe);
 		}
 
@@ -730,7 +820,10 @@ export class ZellijModal implements ZellijModalComponent {
 	/**
 	 * Get overlay options for `ctx.ui.custom()`.
 	 */
-	getOverlayOptions(): { overlay: true; overlayOptions: ZellijModalConfig["overlay"] } {
+	getOverlayOptions(): {
+		overlay: true;
+		overlayOptions: ZellijModalConfig["overlay"];
+	} {
 		return {
 			overlay: true,
 			overlayOptions: this.config.overlay,
@@ -745,11 +838,17 @@ export class ZellijModal implements ZellijModalComponent {
 	}
 
 	private buildConfig(partial: ZellijModalConfigPartial): ZellijModalConfig {
-		const borderStyle = partial.borderStyle && BORDER_STYLES[partial.borderStyle] ? partial.borderStyle : "rounded";
+		const borderStyle =
+			partial.borderStyle && BORDER_STYLES[partial.borderStyle]
+				? partial.borderStyle
+				: "rounded";
 		const padding = Math.max(0, partial.padding ?? 1);
 		const minWidth = Math.max(4, partial.minWidth ?? 40);
 		const maxWidth = Math.max(0, partial.maxWidth ?? 0);
-		const helpUndertitle = normalizeHelpUndertitle(partial.helpText, partial.helpUndertitle);
+		const helpUndertitle = normalizeHelpUndertitle(
+			partial.helpText,
+			partial.helpUndertitle,
+		);
 
 		return {
 			borderStyle,
@@ -771,7 +870,8 @@ export class ZellijModal implements ZellijModalComponent {
 
 	private resolveModalWidth(availableWidth: number): number {
 		const width = Math.max(4, availableWidth);
-		const boundedMax = this.config.maxWidth > 0 ? Math.min(width, this.config.maxWidth) : width;
+		const boundedMax =
+			this.config.maxWidth > 0 ? Math.min(width, this.config.maxWidth) : width;
 		if (boundedMax >= this.config.minWidth) {
 			return boundedMax;
 		}
@@ -819,11 +919,15 @@ export class ZellijSettingsModal implements ZellijModalContentRenderer {
 		this.container = new Container();
 		this.contentBox = new Box(0, 0);
 
-		this.contentBox.addChild(new Text(this.theme.fg("accent", this.theme.bold(options.title)), 0, 0));
+		this.contentBox.addChild(
+			new Text(this.theme.fg("accent", this.theme.bold(options.title)), 0, 0),
+		);
 
 		if (options.description) {
 			this.contentBox.addChild(new Spacer(1));
-			this.contentBox.addChild(new Text(this.theme.fg("muted", options.description), 0, 0));
+			this.contentBox.addChild(
+				new Text(this.theme.fg("muted", options.description), 0, 0),
+			);
 		}
 
 		this.contentBox.addChild(new Spacer(1));
@@ -843,7 +947,9 @@ export class ZellijSettingsModal implements ZellijModalContentRenderer {
 
 		if (options.helpText) {
 			this.contentBox.addChild(new Spacer(1));
-			this.contentBox.addChild(new Text(this.theme.fg("dim", options.helpText), 0, 0));
+			this.contentBox.addChild(
+				new Text(this.theme.fg("dim", options.helpText), 0, 0),
+			);
 		}
 
 		this.container.addChild(this.contentBox);
@@ -858,7 +964,12 @@ export class ZellijSettingsModal implements ZellijModalContentRenderer {
 			return this.container.render(safeWidth);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			return [this.theme.fg("error", truncateToWidth(`Settings render error: ${message}`, safeWidth, "…"))];
+			return [
+				this.theme.fg(
+					"error",
+					truncateToWidth(`Settings render error: ${message}`, safeWidth, "…"),
+				),
+			];
 		}
 	}
 
@@ -904,7 +1015,10 @@ function normalizeHelpUndertitle(
 	return helpText;
 }
 
-function resolvePaletteColor(color: PaletteColor | keyof ZellijColorPalette, palette: ZellijColorPalette): PaletteColor {
+function resolvePaletteColor(
+	color: PaletteColor | keyof ZellijColorPalette,
+	palette: ZellijColorPalette,
+): PaletteColor {
 	if (typeof color === "string") {
 		return palette[color];
 	}

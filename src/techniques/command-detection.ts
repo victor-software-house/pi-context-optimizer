@@ -1,4 +1,5 @@
-const ENV_PREFIX_PATTERN = /^(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|[^\s]+)\s+)*/;
+const ENV_PREFIX_PATTERN =
+	/^(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|[^\s]+)\s+)*/;
 const CHAIN_OPERATORS = ["&&", "||", ";", "|"] as const;
 
 function sliceFirstSegment(command: string): string {
@@ -19,7 +20,9 @@ function sliceFirstSegment(command: string): string {
 	return command.slice(0, cutIndex);
 }
 
-export function normalizeCommandForDetection(command: string | undefined | null): string | null {
+export function normalizeCommandForDetection(
+	command: string | undefined | null,
+): string | null {
 	if (typeof command !== "string") {
 		return null;
 	}
@@ -32,7 +35,9 @@ export function normalizeCommandForDetection(command: string | undefined | null)
 		return null;
 	}
 
-	const withoutEnvPrefix = firstNonEmptyLine.replace(ENV_PREFIX_PATTERN, "").trim();
+	const withoutEnvPrefix = firstNonEmptyLine
+		.replace(ENV_PREFIX_PATTERN, "")
+		.trim();
 	if (!withoutEnvPrefix) {
 		return null;
 	}

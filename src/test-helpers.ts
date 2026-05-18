@@ -1,4 +1,7 @@
-import { DEFAULT_RTK_INTEGRATION_CONFIG, type RtkIntegrationConfig } from "./types.ts";
+import {
+	DEFAULT_RTK_INTEGRATION_CONFIG,
+	type RtkIntegrationConfig,
+} from "./types.ts";
 
 export function runTest(name: string, testFn: () => void): void {
 	testFn();

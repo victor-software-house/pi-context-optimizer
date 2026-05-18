@@ -1,4 +1,7 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionCommandContext,
+} from "@mariozechner/pi-coding-agent";
 import type { SettingItem } from "@mariozechner/pi-tui";
 import { toOnOff } from "./boolean-format.js";
 import { ZellijModal, ZellijSettingsModal } from "./zellij-modal.js";
@@ -27,20 +30,45 @@ interface SettingValueSyncTarget {
 const ON_OFF = ["on", "off"];
 const MODE_VALUES = ["rewrite", "suggest", "compact-only"];
 const SOURCE_FILTER_VALUES = [...RTK_SOURCE_FILTER_LEVELS];
-const TRUNCATE_MAX_CHAR_VALUES = ["4000", "8000", "12000", "20000", "50000", "100000", "200000"];
-const SMART_TRUNCATE_LINE_VALUES = ["40", "80", "120", "160", "220", "320", "500", "1000", "2000", "4000"];
+const TRUNCATE_MAX_CHAR_VALUES = [
+	"4000",
+	"8000",
+	"12000",
+	"20000",
+	"50000",
+	"100000",
+	"200000",
+];
+const SMART_TRUNCATE_LINE_VALUES = [
+	"40",
+	"80",
+	"120",
+	"160",
+	"220",
+	"320",
+	"500",
+	"1000",
+	"2000",
+	"4000",
+];
 const RTK_USAGE_TEXT =
 	"Usage: /rtk [show|path|verify|stats|clear-stats|reset|help] (or run /rtk with no args to open settings modal)";
 
 function parseSourceFilterLevel(
 	value: string,
 ): RtkIntegrationConfig["outputCompaction"]["sourceCodeFiltering"] | undefined {
-	return SOURCE_FILTER_VALUES.includes(value as (typeof SOURCE_FILTER_VALUES)[number])
+	return SOURCE_FILTER_VALUES.includes(
+		value as (typeof SOURCE_FILTER_VALUES)[number],
+	)
 		? (value as RtkIntegrationConfig["outputCompaction"]["sourceCodeFiltering"])
 		: undefined;
 }
 
-function parseIntegerInRange(value: string, min: number, max: number): number | undefined {
+function parseIntegerInRange(
+	value: string,
+	min: number,
+	max: number,
+): number | undefined {
 	if (!/^\d+$/.test(value)) {
 		return undefined;
 	}
@@ -53,7 +81,10 @@ function parseIntegerInRange(value: string, min: number, max: number): number | 
 	return parsed;
 }
 
-function summarizeConfig(config: RtkIntegrationConfig, runtimeStatus: RuntimeStatus): string {
+function summarizeConfig(
+	config: RtkIntegrationConfig,
+	runtimeStatus: RuntimeStatus,
+): string {
 	const categories = [
 		config.rewriteGitGithub ? "git" : "",
 		config.rewriteFilesystem ? "files" : "",
@@ -80,14 +111,16 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "enabled",
 			label: "RTK integration enabled",
-			description: "Master switch for rewrite, suggestions, and output compaction",
+			description:
+				"Master switch for rewrite, suggestions, and output compaction",
 			currentValue: toOnOff(config.enabled),
 			values: ON_OFF,
 		},
 		{
 			id: "mode",
 			label: "Operating mode",
-			description: "rewrite = auto-rewrite bash commands, suggest = notify only, compact-only = keep output compaction without command rewriting",
+			description:
+				"rewrite = auto-rewrite bash commands, suggest = notify only, compact-only = keep output compaction without command rewriting",
 			currentValue: config.mode,
 			values: MODE_VALUES,
 		},
@@ -101,7 +134,8 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "guardWhenRtkMissing",
 			label: "Guard when rtk missing",
-			description: "If on, raw commands run unchanged when rtk binary is unavailable",
+			description:
+				"If on, raw commands run unchanged when rtk binary is unavailable",
 			currentValue: toOnOff(config.guardWhenRtkMissing),
 			values: ON_OFF,
 		},
@@ -115,7 +149,8 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "outputStripAnsi",
 			label: "Strip ANSI in output",
-			description: "Remove color/control codes from tool output before further compaction",
+			description:
+				"Remove color/control codes from tool output before further compaction",
 			currentValue: toOnOff(config.outputCompaction.stripAnsi),
 			values: ON_OFF,
 		},
@@ -136,14 +171,16 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "outputSourceFilteringEnabled",
 			label: "Read source filtering enabled",
-			description: "If off, read output skips source-code filtering regardless of selected level",
+			description:
+				"If off, read output skips source-code filtering regardless of selected level",
 			currentValue: toOnOff(config.outputCompaction.sourceCodeFilteringEnabled),
 			values: ON_OFF,
 		},
 		{
 			id: "outputPreserveExactSkillReads",
 			label: "Preserve exact skill reads",
-			description: "If on, read results under ~/.pi/agent/skills, ~/.agents/skills, .pi/skills, and ancestor .agents/skills skip read compaction",
+			description:
+				"If on, read results under ~/.pi/agent/skills, ~/.agents/skills, .pi/skills, and ancestor .agents/skills skip read compaction",
 			currentValue: toOnOff(config.outputCompaction.preserveExactSkillReads),
 			values: ON_OFF,
 		},
@@ -234,7 +271,8 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "rewriteJavaScript",
 			label: "Rewrite JavaScript/TypeScript",
-			description: "vitest, npm/npx/next, tsc, lint, prettier, playwright, prisma",
+			description:
+				"vitest, npm/npx/next, tsc, lint, prettier, playwright, prisma",
 			currentValue: toOnOff(config.rewriteJavaScript),
 			values: ON_OFF,
 		},
@@ -255,7 +293,8 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "rewriteContainers",
 			label: "Rewrite containers",
-			description: "docker compose/ps/images/logs/run/build/exec and kubectl core ops",
+			description:
+				"docker compose/ps/images/logs/run/build/exec and kubectl core ops",
 			currentValue: toOnOff(config.rewriteContainers),
 			values: ON_OFF,
 		},
@@ -269,14 +308,19 @@ function buildSettingItems(config: RtkIntegrationConfig): SettingItem[] {
 		{
 			id: "rewritePackageManagers",
 			label: "Rewrite package managers",
-			description: "pnpm list/ls/outdated/build/typecheck and npm list/outdated",
+			description:
+				"pnpm list/ls/outdated/build/typecheck and npm list/outdated",
 			currentValue: toOnOff(config.rewritePackageManagers),
 			values: ON_OFF,
 		},
 	];
 }
 
-function applySetting(config: RtkIntegrationConfig, id: string, value: string): RtkIntegrationConfig {
+function applySetting(
+	config: RtkIntegrationConfig,
+	id: string,
+	value: string,
+): RtkIntegrationConfig {
 	switch (id) {
 		case "enabled":
 			return { ...config, enabled: value === "on" };
@@ -289,12 +333,18 @@ function applySetting(config: RtkIntegrationConfig, id: string, value: string): 
 		case "outputCompactionEnabled":
 			return {
 				...config,
-				outputCompaction: { ...config.outputCompaction, enabled: value === "on" },
+				outputCompaction: {
+					...config.outputCompaction,
+					enabled: value === "on",
+				},
 			};
 		case "outputStripAnsi":
 			return {
 				...config,
-				outputCompaction: { ...config.outputCompaction, stripAnsi: value === "on" },
+				outputCompaction: {
+					...config.outputCompaction,
+					stripAnsi: value === "on",
+				},
 			};
 		case "outputTruncateEnabled":
 			return {
@@ -342,7 +392,8 @@ function applySetting(config: RtkIntegrationConfig, id: string, value: string): 
 				...config,
 				outputCompaction: {
 					...config.outputCompaction,
-					sourceCodeFiltering: parsedValue ?? config.outputCompaction.sourceCodeFiltering,
+					sourceCodeFiltering:
+						parsedValue ?? config.outputCompaction.sourceCodeFiltering,
 				},
 			};
 		}
@@ -441,39 +492,116 @@ function applySetting(config: RtkIntegrationConfig, id: string, value: string): 
 	}
 }
 
-function syncSettingValues(settingsList: SettingValueSyncTarget, config: RtkIntegrationConfig): void {
+function syncSettingValues(
+	settingsList: SettingValueSyncTarget,
+	config: RtkIntegrationConfig,
+): void {
 	settingsList.updateValue("enabled", toOnOff(config.enabled));
 	settingsList.updateValue("mode", config.mode);
-	settingsList.updateValue("showRewriteNotifications", toOnOff(config.showRewriteNotifications));
-	settingsList.updateValue("guardWhenRtkMissing", toOnOff(config.guardWhenRtkMissing));
-	settingsList.updateValue("outputCompactionEnabled", toOnOff(config.outputCompaction.enabled));
-	settingsList.updateValue("outputStripAnsi", toOnOff(config.outputCompaction.stripAnsi));
-	settingsList.updateValue("outputTruncateEnabled", toOnOff(config.outputCompaction.truncate.enabled));
-	settingsList.updateValue("outputTruncateMaxChars", String(config.outputCompaction.truncate.maxChars));
-	settingsList.updateValue("outputSourceFilteringEnabled", toOnOff(config.outputCompaction.sourceCodeFilteringEnabled));
-	settingsList.updateValue("outputPreserveExactSkillReads", toOnOff(config.outputCompaction.preserveExactSkillReads));
-	settingsList.updateValue("outputSourceFiltering", config.outputCompaction.sourceCodeFiltering);
-	settingsList.updateValue("outputSmartTruncate", toOnOff(config.outputCompaction.smartTruncate.enabled));
-	settingsList.updateValue("outputSmartTruncateMaxLines", String(config.outputCompaction.smartTruncate.maxLines));
-	settingsList.updateValue("outputAggregateTestOutput", toOnOff(config.outputCompaction.aggregateTestOutput));
-	settingsList.updateValue("outputFilterBuildOutput", toOnOff(config.outputCompaction.filterBuildOutput));
-	settingsList.updateValue("outputCompactGitOutput", toOnOff(config.outputCompaction.compactGitOutput));
-	settingsList.updateValue("outputAggregateLinterOutput", toOnOff(config.outputCompaction.aggregateLinterOutput));
-	settingsList.updateValue("outputGroupSearchOutput", toOnOff(config.outputCompaction.groupSearchOutput));
-	settingsList.updateValue("outputTrackSavings", toOnOff(config.outputCompaction.trackSavings));
-	settingsList.updateValue("rewriteGitGithub", toOnOff(config.rewriteGitGithub));
-	settingsList.updateValue("rewriteFilesystem", toOnOff(config.rewriteFilesystem));
+	settingsList.updateValue(
+		"showRewriteNotifications",
+		toOnOff(config.showRewriteNotifications),
+	);
+	settingsList.updateValue(
+		"guardWhenRtkMissing",
+		toOnOff(config.guardWhenRtkMissing),
+	);
+	settingsList.updateValue(
+		"outputCompactionEnabled",
+		toOnOff(config.outputCompaction.enabled),
+	);
+	settingsList.updateValue(
+		"outputStripAnsi",
+		toOnOff(config.outputCompaction.stripAnsi),
+	);
+	settingsList.updateValue(
+		"outputTruncateEnabled",
+		toOnOff(config.outputCompaction.truncate.enabled),
+	);
+	settingsList.updateValue(
+		"outputTruncateMaxChars",
+		String(config.outputCompaction.truncate.maxChars),
+	);
+	settingsList.updateValue(
+		"outputSourceFilteringEnabled",
+		toOnOff(config.outputCompaction.sourceCodeFilteringEnabled),
+	);
+	settingsList.updateValue(
+		"outputPreserveExactSkillReads",
+		toOnOff(config.outputCompaction.preserveExactSkillReads),
+	);
+	settingsList.updateValue(
+		"outputSourceFiltering",
+		config.outputCompaction.sourceCodeFiltering,
+	);
+	settingsList.updateValue(
+		"outputSmartTruncate",
+		toOnOff(config.outputCompaction.smartTruncate.enabled),
+	);
+	settingsList.updateValue(
+		"outputSmartTruncateMaxLines",
+		String(config.outputCompaction.smartTruncate.maxLines),
+	);
+	settingsList.updateValue(
+		"outputAggregateTestOutput",
+		toOnOff(config.outputCompaction.aggregateTestOutput),
+	);
+	settingsList.updateValue(
+		"outputFilterBuildOutput",
+		toOnOff(config.outputCompaction.filterBuildOutput),
+	);
+	settingsList.updateValue(
+		"outputCompactGitOutput",
+		toOnOff(config.outputCompaction.compactGitOutput),
+	);
+	settingsList.updateValue(
+		"outputAggregateLinterOutput",
+		toOnOff(config.outputCompaction.aggregateLinterOutput),
+	);
+	settingsList.updateValue(
+		"outputGroupSearchOutput",
+		toOnOff(config.outputCompaction.groupSearchOutput),
+	);
+	settingsList.updateValue(
+		"outputTrackSavings",
+		toOnOff(config.outputCompaction.trackSavings),
+	);
+	settingsList.updateValue(
+		"rewriteGitGithub",
+		toOnOff(config.rewriteGitGithub),
+	);
+	settingsList.updateValue(
+		"rewriteFilesystem",
+		toOnOff(config.rewriteFilesystem),
+	);
 	settingsList.updateValue("rewriteRust", toOnOff(config.rewriteRust));
-	settingsList.updateValue("rewriteJavaScript", toOnOff(config.rewriteJavaScript));
+	settingsList.updateValue(
+		"rewriteJavaScript",
+		toOnOff(config.rewriteJavaScript),
+	);
 	settingsList.updateValue("rewritePython", toOnOff(config.rewritePython));
 	settingsList.updateValue("rewriteGo", toOnOff(config.rewriteGo));
-	settingsList.updateValue("rewriteContainers", toOnOff(config.rewriteContainers));
+	settingsList.updateValue(
+		"rewriteContainers",
+		toOnOff(config.rewriteContainers),
+	);
 	settingsList.updateValue("rewriteNetwork", toOnOff(config.rewriteNetwork));
-	settingsList.updateValue("rewritePackageManagers", toOnOff(config.rewritePackageManagers));
+	settingsList.updateValue(
+		"rewritePackageManagers",
+		toOnOff(config.rewritePackageManagers),
+	);
 }
 
-async function openSettingsModal(ctx: ExtensionCommandContext, controller: RtkIntegrationController): Promise<void> {
-	const overlayOptions = { anchor: "center" as const, width: 86, maxHeight: "85%" as const, margin: 1 };
+async function openSettingsModal(
+	ctx: ExtensionCommandContext,
+	controller: RtkIntegrationController,
+): Promise<void> {
+	const overlayOptions = {
+		anchor: "center" as const,
+		width: 86,
+		maxHeight: "85%" as const,
+		margin: 1,
+	};
 
 	await ctx.ui.custom<void>(
 		(tui, theme, _keybindings, done) => {
@@ -483,7 +611,8 @@ async function openSettingsModal(ctx: ExtensionCommandContext, controller: RtkIn
 			settingsModal = new ZellijSettingsModal(
 				{
 					title: "RTK Integration Settings",
-					description: "Bash rewrite + tool output compaction for lower token usage",
+					description:
+						"Bash rewrite + tool output compaction for lower token usage",
 					settings: buildSettingItems(current),
 					onChange: (id, newValue) => {
 						current = applySetting(current, id, newValue);
@@ -550,7 +679,10 @@ async function handleArgs(
 	}
 
 	if (normalized === "show") {
-		ctx.ui.notify(`rtk: ${summarizeConfig(controller.getConfig(), controller.getRuntimeStatus())}`, "info");
+		ctx.ui.notify(
+			`rtk: ${summarizeConfig(controller.getConfig(), controller.getRuntimeStatus())}`,
+			"info",
+		);
 		return true;
 	}
 
@@ -593,7 +725,10 @@ async function handleArgs(
 	return true;
 }
 
-export function registerRtkIntegrationCommand(pi: ExtensionAPI, controller: RtkIntegrationController): void {
+export function registerRtkIntegrationCommand(
+	pi: ExtensionAPI,
+	controller: RtkIntegrationController,
+): void {
 	pi.registerCommand("rtk", {
 		description: "Configure RTK rewrite and output compaction integration",
 		getArgumentCompletions: getRtkArgumentCompletions,

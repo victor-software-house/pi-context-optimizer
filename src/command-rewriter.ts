@@ -1,5 +1,12 @@
-import { shouldBypassRewriteForCommand, shouldBypassWholeCommandRewrite } from "./rewrite-bypass.js";
-import { RTK_REWRITE_RULES, type RtkRewriteCategory, type RtkRewriteRule } from "./rewrite-rules.js";
+import {
+	shouldBypassRewriteForCommand,
+	shouldBypassWholeCommandRewrite,
+} from "./rewrite-bypass.js";
+import {
+	RTK_REWRITE_RULES,
+	type RtkRewriteCategory,
+	type RtkRewriteRule,
+} from "./rewrite-rules.js";
 import type { RtkIntegrationConfig } from "./types.js";
 
 const ENV_PREFIX_PATTERN = /^((?:[A-Za-z_][A-Za-z0-9_]*=[^\s]*\s+)*)/;
@@ -15,7 +22,12 @@ type CommandToken =
 			value: string;
 	  };
 
-type SedNextTokenMode = "none" | "defaultScript" | "expressionScript" | "fileArgument" | "inPlaceArgument";
+type SedNextTokenMode =
+	| "none"
+	| "defaultScript"
+	| "expressionScript"
+	| "fileArgument"
+	| "inPlaceArgument";
 
 interface SegmentParseState {
 	commandName?: string;
@@ -54,7 +66,10 @@ interface SingleSegmentRewriteResult {
 	alreadyRtk: boolean;
 }
 
-function categoryEnabled(config: RtkIntegrationConfig, category: RtkRewriteCategory): boolean {
+function categoryEnabled(
+	config: RtkIntegrationConfig,
+	category: RtkRewriteCategory,
+): boolean {
 	switch (category) {
 		case "gitGithub":
 			return config.rewriteGitGithub;
@@ -88,8 +103,12 @@ function createSegmentParseState(): SegmentParseState {
 
 function normalizeShellWord(word: string): string {
 	const unwrapped = word.replace(/^(?:["'`])|(?:["'`])$/g, "");
-	const lastPathSeparator = Math.max(unwrapped.lastIndexOf("/"), unwrapped.lastIndexOf("\\"));
-	const basename = lastPathSeparator >= 0 ? unwrapped.slice(lastPathSeparator + 1) : unwrapped;
+	const lastPathSeparator = Math.max(
+		unwrapped.lastIndexOf("/"),
+		unwrapped.lastIndexOf("\\"),
+	);
+	const basename =
+		lastPathSeparator >= 0 ? unwrapped.slice(lastPathSeparator + 1) : unwrapped;
 	return basename.toLowerCase();
 }
 
@@ -112,7 +131,10 @@ function looksLikeSedBackupExtension(word: string): boolean {
 	return normalized.startsWith(".") || normalized === "*";
 }
 
-function updateSegmentParseState(state: SegmentParseState, word: string): SegmentParseState {
+function updateSegmentParseState(
+	state: SegmentParseState,
+	word: string,
+): SegmentParseState {
 	if (!word) {
 		return state;
 	}
@@ -265,7 +287,10 @@ function tokenizeCommand(command: string): CommandToken[] {
 		if (segment.length > 0) {
 			tokens.push({ type: "segment", value: segment });
 		}
-		tokens.push({ type: "separator", value: command.slice(index, index + length) });
+		tokens.push({
+			type: "separator",
+			value: command.slice(index, index + length),
+		});
 		segmentStart = index + length;
 		segmentState = createSegmentParseState();
 	};
@@ -282,7 +307,7 @@ function tokenizeCommand(command: string): CommandToken[] {
 	for (let index = 0; index < command.length; index += 1) {
 		const char = command[index];
 		const nextChar = command[index + 1] ?? "";
-		const prevChar = index > 0 ? command[index - 1] ?? "" : "";
+		const prevChar = index > 0 ? (command[index - 1] ?? "") : "";
 
 		if (escaped) {
 			escaped = false;
@@ -335,7 +360,12 @@ function tokenizeCommand(command: string): CommandToken[] {
 				continue;
 			}
 
-			if (char === "&" && nextChar !== ">" && prevChar !== ">" && prevChar !== "<") {
+			if (
+				char === "&" &&
+				nextChar !== ">" &&
+				prevChar !== ">" &&
+				prevChar !== "<"
+			) {
 				pushSeparator(index, 1);
 				continue;
 			}
@@ -428,7 +458,8 @@ function rewriteSingleSegmentCommand(
 		}
 
 		const rewrittenBody = commandBody.replace(rule.matcher, rule.replacement);
-		const finalizedRewrittenBody = applyPlatformProxyCommandFixups(rewrittenBody);
+		const finalizedRewrittenBody =
+			applyPlatformProxyCommandFixups(rewrittenBody);
 		if (finalizedRewrittenBody === commandBody) {
 			continue;
 		}
@@ -449,7 +480,10 @@ function rewriteSingleSegmentCommand(
 	};
 }
 
-function rewriteSegment(segment: string, config: RtkIntegrationConfig): SegmentRewriteResult {
+function rewriteSegment(
+	segment: string,
+	config: RtkIntegrationConfig,
+): SegmentRewriteResult {
 	const leadingWhitespace = segment.match(/^\s*/)?.[0] ?? "";
 	const trailingWhitespace = segment.match(/\s*$/)?.[0] ?? "";
 	const core = segment.trim();
@@ -480,7 +514,9 @@ function rewriteSegment(segment: string, config: RtkIntegrationConfig): SegmentR
 	const envPrefix = envMatch?.[1] ?? "";
 	const commandBody = core.slice(envPrefix.length);
 	rewrite.rule.matcher.lastIndex = 0;
-	const rewrittenBody = rewrite.rewrittenBody ?? commandBody.replace(rewrite.rule.matcher, rewrite.rule.replacement);
+	const rewrittenBody =
+		rewrite.rewrittenBody ??
+		commandBody.replace(rewrite.rule.matcher, rewrite.rule.replacement);
 
 	return {
 		value: `${leadingWhitespace}${envPrefix}${rewrittenBody}${trailingWhitespace}`,
@@ -492,7 +528,10 @@ function rewriteSegment(segment: string, config: RtkIntegrationConfig): SegmentR
 	};
 }
 
-export function computeRewriteDecision(command: string, config: RtkIntegrationConfig): RewriteDecision {
+export function computeRewriteDecision(
+	command: string,
+	config: RtkIntegrationConfig,
+): RewriteDecision {
 	const original = command;
 	const trimmed = command.trim();
 	if (!trimmed) {
@@ -513,7 +552,10 @@ export function computeRewriteDecision(command: string, config: RtkIntegrationCo
 		};
 	}
 
-	if (!isAlreadyRtkCommand(command) && shouldBypassWholeCommandRewrite(command)) {
+	if (
+		!isAlreadyRtkCommand(command) &&
+		shouldBypassWholeCommandRewrite(command)
+	) {
 		return {
 			changed: false,
 			originalCommand: original,

@@ -22,7 +22,11 @@ function detectPathPrefix(path: string, separator: "/" | "\\"): string {
 	return "";
 }
 
-function joinPathSegments(prefix: string, separator: "/" | "\\", segments: string[]): string {
+function joinPathSegments(
+	prefix: string,
+	separator: "/" | "\\",
+	segments: string[],
+): string {
 	if (segments.length === 0) {
 		return prefix || "";
 	}
@@ -47,12 +51,21 @@ export function compactPath(path: string, maxLength: number): string {
 		.split(/[\\/]+/)
 		.filter((segment) => segment.length > 0);
 
-	const lastSegment = segments[segments.length - 1] ?? path.slice(-(maxLength - 1));
+	const lastSegment =
+		segments[segments.length - 1] ?? path.slice(-(maxLength - 1));
 	const previousSegment = segments[segments.length - 2];
 
 	const candidates = [
-		joinPathSegments(prefix, separator, ["…", ...(previousSegment ? [previousSegment] : []), lastSegment]),
-		joinPathSegments("", separator, ["…", ...(previousSegment ? [previousSegment] : []), lastSegment]),
+		joinPathSegments(prefix, separator, [
+			"…",
+			...(previousSegment ? [previousSegment] : []),
+			lastSegment,
+		]),
+		joinPathSegments("", separator, [
+			"…",
+			...(previousSegment ? [previousSegment] : []),
+			lastSegment,
+		]),
 		joinPathSegments("", separator, ["…", lastSegment]),
 		`…${path.slice(-(maxLength - 1))}`,
 	];

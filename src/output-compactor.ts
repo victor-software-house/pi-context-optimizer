@@ -58,7 +58,10 @@ const LOSSY_TECHNIQUE_PREFIXES = [
 
 const READ_EXACT_OUTPUT_LINE_THRESHOLD = 80;
 const READ_COMPACTION_BANNER_PREFIX = "[RTK compacted output:";
-const USER_SKILL_ROOTS = [join(homedir(), ".pi", "agent", "skills"), join(homedir(), ".agents", "skills")];
+const USER_SKILL_ROOTS = [
+	join(homedir(), ".pi", "agent", "skills"),
+	join(homedir(), ".agents", "skills"),
+];
 
 function normalizePathForComparison(path: string): string {
 	return process.platform === "win32" ? path.toLowerCase() : path;
@@ -71,7 +74,9 @@ function isPathUnderRoot(targetPath: string, rootPath: string): boolean {
 		return true;
 	}
 
-	const rootWithSeparator = normalizedRoot.endsWith(sep) ? normalizedRoot : `${normalizedRoot}${sep}`;
+	const rootWithSeparator = normalizedRoot.endsWith(sep)
+		? normalizedRoot
+		: `${normalizedRoot}${sep}`;
 	return normalizedTarget.startsWith(rootWithSeparator);
 }
 
@@ -141,19 +146,26 @@ function shouldPreserveExactReadOutput(
 		return true;
 	}
 
-	if (config.outputCompaction.preserveExactSkillReads && isSkillReadPath(normalizePath(input))) {
+	if (
+		config.outputCompaction.preserveExactSkillReads &&
+		isSkillReadPath(normalizePath(input))
+	) {
 		return true;
 	}
 
 	return countLines(text) <= READ_EXACT_OUTPUT_LINE_THRESHOLD;
 }
 
-function shouldApplyReadSourceFiltering(text: string, config: RtkIntegrationConfig): boolean {
+function shouldApplyReadSourceFiltering(
+	text: string,
+	config: RtkIntegrationConfig,
+): boolean {
 	const compaction = config.outputCompaction;
 	const lineCount = countLines(text);
 
 	return (
-		(compaction.smartTruncate.enabled && lineCount > compaction.smartTruncate.maxLines) ||
+		(compaction.smartTruncate.enabled &&
+			lineCount > compaction.smartTruncate.maxLines) ||
 		(compaction.truncate.enabled && text.length > compaction.truncate.maxChars)
 	);
 }
@@ -178,7 +190,9 @@ function countLines(text: string): number {
 function hasLossyCompaction(techniques: string[]): boolean {
 	return techniques.some((technique) =>
 		LOSSY_TECHNIQUE_PREFIXES.some((prefix) =>
-			prefix.endsWith(":") ? technique.startsWith(prefix) : technique === prefix,
+			prefix.endsWith(":")
+				? technique.startsWith(prefix)
+				: technique === prefix,
 		),
 	);
 }
@@ -232,7 +246,10 @@ function compactBashText(
 		}
 	}
 
-	if (compaction.truncate.enabled && nextText.length > compaction.truncate.maxChars) {
+	if (
+		compaction.truncate.enabled &&
+		nextText.length > compaction.truncate.maxChars
+	) {
 		nextText = truncate(nextText, compaction.truncate.maxChars);
 		techniques.push("truncate");
 	}
@@ -269,7 +286,11 @@ function compactReadText(
 		compaction.sourceCodeFiltering !== "none" &&
 		shouldApplyReadSourceFiltering(text, config)
 	) {
-		const filtered = filterSourceCode(nextText, language, compaction.sourceCodeFiltering);
+		const filtered = filterSourceCode(
+			nextText,
+			language,
+			compaction.sourceCodeFiltering,
+		);
 		if (filtered !== nextText) {
 			nextText = filtered;
 			techniques.push(`source:${compaction.sourceCodeFiltering}`);
@@ -279,7 +300,11 @@ function compactReadText(
 	if (compaction.smartTruncate.enabled) {
 		const lineCount = nextText.split("\n").length;
 		if (lineCount > compaction.smartTruncate.maxLines) {
-			const compacted = smartTruncate(nextText, compaction.smartTruncate.maxLines, language);
+			const compacted = smartTruncate(
+				nextText,
+				compaction.smartTruncate.maxLines,
+				language,
+			);
 			if (compacted !== nextText) {
 				nextText = compacted;
 				techniques.push("smart-truncate");
@@ -287,19 +312,28 @@ function compactReadText(
 		}
 	}
 
-	if (compaction.truncate.enabled && nextText.length > compaction.truncate.maxChars) {
+	if (
+		compaction.truncate.enabled &&
+		nextText.length > compaction.truncate.maxChars
+	) {
 		nextText = truncate(nextText, compaction.truncate.maxChars);
 		techniques.push("truncate");
 	}
 
-	if (techniques.length > 0 && !nextText.startsWith(READ_COMPACTION_BANNER_PREFIX)) {
+	if (
+		techniques.length > 0 &&
+		!nextText.startsWith(READ_COMPACTION_BANNER_PREFIX)
+	) {
 		nextText = `${formatReadCompactionBanner(techniques)}\n${nextText}`;
 	}
 
 	return { text: nextText, techniques };
 }
 
-function compactGrepText(text: string, config: RtkIntegrationConfig): { text: string; techniques: string[] } {
+function compactGrepText(
+	text: string,
+	config: RtkIntegrationConfig,
+): { text: string; techniques: string[] } {
 	let nextText = text;
 	const techniques: string[] = [];
 	const compaction = config.outputCompaction;
@@ -320,7 +354,10 @@ function compactGrepText(text: string, config: RtkIntegrationConfig): { text: st
 		}
 	}
 
-	if (compaction.truncate.enabled && nextText.length > compaction.truncate.maxChars) {
+	if (
+		compaction.truncate.enabled &&
+		nextText.length > compaction.truncate.maxChars
+	) {
 		nextText = truncate(nextText, compaction.truncate.maxChars);
 		techniques.push("truncate");
 	}
@@ -359,7 +396,11 @@ export function compactToolResult(
 
 		let transformed = { text: contentBlock.text, techniques: [] as string[] };
 		if (event.toolName === "bash") {
-			transformed = compactBashText(contentBlock.text, normalizeCommand(input), config);
+			transformed = compactBashText(
+				contentBlock.text,
+				normalizeCommand(input),
+				config,
+			);
 		} else if (event.toolName === "read") {
 			const normalizedPath = normalizePath(input);
 			transformed = compactReadText(

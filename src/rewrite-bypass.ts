@@ -1,6 +1,7 @@
 import type { RtkRewriteRule } from "./rewrite-rules.js";
 
-const COMMAND_WORD_PATTERN = /"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|`(?:\\.|[^`])*`|[^\s]+/g;
+const COMMAND_WORD_PATTERN =
+	/"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|`(?:\\.|[^`])*`|[^\s]+/g;
 const BYPASSED_CARGO_SUBCOMMANDS = new Set(["help", "install", "publish"]);
 const GH_STRUCTURED_OUTPUT_FLAGS = ["--json", "--jq", "--template"] as const;
 const UNSAFE_COMPOUND_REWRITE_COMMANDS = new Set(["find", "grep", "rg", "ls"]);
@@ -21,7 +22,11 @@ const BYPASSED_FIND_ACTIONS = new Set([
 	"-quit",
 ]);
 const BASH_INLINE_COMMAND_FLAGS = new Set(["-c", "-cl", "-lc", "--command"]);
-const POWERSHELL_INLINE_COMMAND_FLAGS = new Set(["-c", "-command", "-encodedcommand"]);
+const POWERSHELL_INLINE_COMMAND_FLAGS = new Set([
+	"-c",
+	"-command",
+	"-encodedcommand",
+]);
 const CMD_INLINE_COMMAND_FLAGS = new Set(["/c", "/k"]);
 const INTERACTIVE_CONTAINER_SHELLS = new Set([
 	"ash",
@@ -57,7 +62,7 @@ function splitTopLevelCompoundSegments(command: string): string[] {
 	for (let index = 0; index < command.length; index += 1) {
 		const char = command[index] ?? "";
 		const nextChar = command[index + 1] ?? "";
-		const prevChar = index > 0 ? command[index - 1] ?? "" : "";
+		const prevChar = index > 0 ? (command[index - 1] ?? "") : "";
 
 		if (escaped) {
 			escaped = false;
@@ -86,11 +91,20 @@ function splitTopLevelCompoundSegments(command: string): string[] {
 		}
 
 		let separatorLength = 0;
-		if ((char === "&" && nextChar === "&") || (char === "|" && nextChar === "|") || (char === "|" && nextChar === "&")) {
+		if (
+			(char === "&" && nextChar === "&") ||
+			(char === "|" && nextChar === "|") ||
+			(char === "|" && nextChar === "&")
+		) {
 			separatorLength = 2;
 		} else if (char === "|" && prevChar !== ">") {
 			separatorLength = 1;
-		} else if (char === "&" && nextChar !== ">" && prevChar !== ">" && prevChar !== "<") {
+		} else if (
+			char === "&" &&
+			nextChar !== ">" &&
+			prevChar !== ">" &&
+			prevChar !== "<"
+		) {
 			separatorLength = 1;
 		}
 
@@ -132,14 +146,26 @@ function shouldBypassCargoRewrite(tokens: string[]): boolean {
 
 function normalizeCommandWord(token: string): string {
 	const unwrapped = token.replace(/^(?:["'`])|(?:["'`])$/g, "");
-	const lastPathSeparator = Math.max(unwrapped.lastIndexOf("/"), unwrapped.lastIndexOf("\\"));
-	const basename = lastPathSeparator >= 0 ? unwrapped.slice(lastPathSeparator + 1) : unwrapped;
+	const lastPathSeparator = Math.max(
+		unwrapped.lastIndexOf("/"),
+		unwrapped.lastIndexOf("\\"),
+	);
+	const basename =
+		lastPathSeparator >= 0 ? unwrapped.slice(lastPathSeparator + 1) : unwrapped;
 	return basename.toLowerCase();
 }
 
-function findInteractiveShellIndex(tokens: string[], startIndex: number, endIndex: number): number {
+function findInteractiveShellIndex(
+	tokens: string[],
+	startIndex: number,
+	endIndex: number,
+): number {
 	for (let index = startIndex; index < endIndex; index += 1) {
-		if (INTERACTIVE_CONTAINER_SHELLS.has(normalizeCommandWord(tokens[index] ?? ""))) {
+		if (
+			INTERACTIVE_CONTAINER_SHELLS.has(
+				normalizeCommandWord(tokens[index] ?? ""),
+			)
+		) {
 			return index;
 		}
 	}
@@ -147,14 +173,20 @@ function findInteractiveShellIndex(tokens: string[], startIndex: number, endInde
 	return -1;
 }
 
-function hasTrailingArguments(tokens: string[], startIndex: number, endIndex: number): boolean {
+function hasTrailingArguments(
+	tokens: string[],
+	startIndex: number,
+	endIndex: number,
+): boolean {
 	return startIndex >= 0 && startIndex < endIndex - 1;
 }
 
 function hasStructuredGhOutputFlag(tokens: string[]): boolean {
 	return tokens.some((token) => {
 		const normalized = token.toLowerCase();
-		return GH_STRUCTURED_OUTPUT_FLAGS.some((flag) => normalized === flag || normalized.startsWith(`${flag}=`));
+		return GH_STRUCTURED_OUTPUT_FLAGS.some(
+			(flag) => normalized === flag || normalized.startsWith(`${flag}=`),
+		);
 	});
 }
 
@@ -166,7 +198,11 @@ function hasShortInteractiveFlag(token: string, flag: "i" | "t"): boolean {
 	return token.slice(1).includes(flag);
 }
 
-function hasInteractiveFlagPair(tokens: string[], startIndex: number, endIndex: number): boolean {
+function hasInteractiveFlagPair(
+	tokens: string[],
+	startIndex: number,
+	endIndex: number,
+): boolean {
 	let interactive = false;
 	let tty = false;
 
@@ -200,7 +236,11 @@ function shouldBypassInteractiveContainerRewrite(tokens: string[]): boolean {
 	if (command === "docker" || command === "podman") {
 		const subcommand = tokens[1]?.toLowerCase();
 		if (subcommand === "run" || subcommand === "exec") {
-			const interactiveShellIndex = findInteractiveShellIndex(tokens, 2, tokens.length);
+			const interactiveShellIndex = findInteractiveShellIndex(
+				tokens,
+				2,
+				tokens.length,
+			);
 			return (
 				interactiveShellIndex >= 0 &&
 				!hasTrailingArguments(tokens, interactiveShellIndex, tokens.length) &&
@@ -211,7 +251,11 @@ function shouldBypassInteractiveContainerRewrite(tokens: string[]): boolean {
 		if (subcommand === "compose") {
 			const composeSubcommand = tokens[2]?.toLowerCase();
 			if (composeSubcommand === "run" || composeSubcommand === "exec") {
-				const interactiveShellIndex = findInteractiveShellIndex(tokens, 3, tokens.length);
+				const interactiveShellIndex = findInteractiveShellIndex(
+					tokens,
+					3,
+					tokens.length,
+				);
 				return (
 					interactiveShellIndex >= 0 &&
 					!hasTrailingArguments(tokens, interactiveShellIndex, tokens.length) &&
@@ -227,12 +271,19 @@ function shouldBypassInteractiveContainerRewrite(tokens: string[]): boolean {
 			return false;
 		}
 
-		const interactiveShellIndex = findInteractiveShellIndex(tokens, separatorIndex + 1, tokens.length);
+		const interactiveShellIndex = findInteractiveShellIndex(
+			tokens,
+			separatorIndex + 1,
+			tokens.length,
+		);
 		if (interactiveShellIndex === -1) {
 			return false;
 		}
 
-		return !hasTrailingArguments(tokens, interactiveShellIndex, tokens.length) && !hasInteractiveFlagPair(tokens, 2, separatorIndex);
+		return (
+			!hasTrailingArguments(tokens, interactiveShellIndex, tokens.length) &&
+			!hasInteractiveFlagPair(tokens, 2, separatorIndex)
+		);
 	}
 
 	return false;
@@ -291,14 +342,20 @@ export function shouldBypassWholeCommandRewrite(command: string): boolean {
 	return segments.some((segment) => {
 		const tokens = splitCommandWords(segment);
 		const commandName = normalizeCommandWord(tokens[0] ?? "");
-		return UNSAFE_COMPOUND_REWRITE_COMMANDS.has(commandName) || shouldBypassNativeShellProxyRewrite(tokens);
+		return (
+			UNSAFE_COMPOUND_REWRITE_COMMANDS.has(commandName) ||
+			shouldBypassNativeShellProxyRewrite(tokens)
+		);
 	});
 }
 
 /**
  * Skips RTK rewrites for command shapes that do not map cleanly to RTK wrappers.
  */
-export function shouldBypassRewriteForCommand(commandBody: string, rule: RtkRewriteRule): boolean {
+export function shouldBypassRewriteForCommand(
+	commandBody: string,
+	rule: RtkRewriteRule,
+): boolean {
 	const tokens = splitCommandWords(commandBody.trim());
 	if (tokens.length === 0) {
 		return false;
@@ -324,7 +381,11 @@ export function shouldBypassRewriteForCommand(commandBody: string, rule: RtkRewr
 		return shouldBypassLsRewrite(tokens);
 	}
 
-	if (rule.id === "bash-proxy" || rule.id === "cmd-proxy" || rule.id === "powershell-proxy") {
+	if (
+		rule.id === "bash-proxy" ||
+		rule.id === "cmd-proxy" ||
+		rule.id === "powershell-proxy"
+	) {
 		return shouldBypassNativeShellProxyRewrite(tokens);
 	}
 

@@ -1,4 +1,9 @@
-import { isToolCallEventType, type ExtensionAPI, type ExtensionCommandContext, type ExtensionContext } from "@mariozechner/pi-coding-agent";
+import {
+	isToolCallEventType,
+	type ExtensionAPI,
+	type ExtensionCommandContext,
+	type ExtensionContext,
+} from "@mariozechner/pi-coding-agent";
 import {
 	ensureConfigExists,
 	getRtkIntegrationConfigPath,
@@ -9,11 +14,20 @@ import {
 import { computeRewriteDecision } from "./command-rewriter.js";
 import { registerRtkIntegrationCommand } from "./config-modal.js";
 import { EXTENSION_NAME } from "./constants.js";
-import { clearOutputMetrics, getOutputMetricsSummary } from "./output-metrics.js";
-import { compactToolResult, type ToolResultCompactionMetadata } from "./output-compactor.js";
+import {
+	clearOutputMetrics,
+	getOutputMetricsSummary,
+} from "./output-metrics.js";
+import {
+	compactToolResult,
+	type ToolResultCompactionMetadata,
+} from "./output-compactor.js";
 import { toRecord } from "./record-utils.js";
 import { applyRewrittenCommandShellSafetyFixups } from "./rewrite-pipeline-safety.js";
-import { shouldRequireRtkAvailabilityForCommandHandling, shouldSkipCommandHandlingWhenRtkMissing } from "./runtime-guard.js";
+import {
+	shouldRequireRtkAvailabilityForCommandHandling,
+	shouldSkipCommandHandlingWhenRtkMissing,
+} from "./runtime-guard.js";
 import type { RtkIntegrationConfig, RuntimeStatus } from "./types.js";
 import { applyWindowsBashCompatibilityFixes } from "./windows-command-helpers.js";
 
@@ -56,7 +70,9 @@ export interface BoundedNoticeTracker {
 	reset(): void;
 }
 
-export function createBoundedNoticeTracker(maxEntries: number): BoundedNoticeTracker {
+export function createBoundedNoticeTracker(
+	maxEntries: number,
+): BoundedNoticeTracker {
 	const normalizedLimit = Math.max(1, Math.floor(maxEntries));
 	const seen = new Set<string>();
 	const order: string[] = [];
@@ -94,7 +110,10 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 	const suggestionNotices = createBoundedNoticeTracker(200);
 	let missingRtkWarningShown = false;
 
-	const formatRewriteNotice = (originalCommand: string, rewrittenCommand: string): string => {
+	const formatRewriteNotice = (
+		originalCommand: string,
+		rewrittenCommand: string,
+	): string => {
 		const original = trimMessage(originalCommand, 100);
 		const rewritten = trimMessage(rewrittenCommand, 120);
 		return `RTK rewrite: ${original} -> ${rewritten}`;
@@ -115,7 +134,9 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		}
 	};
 
-	const refreshConfig = async (ctx?: ExtensionContext | ExtensionCommandContext): Promise<void> => {
+	const refreshConfig = async (
+		ctx?: ExtensionContext | ExtensionCommandContext,
+	): Promise<void> => {
 		const ensured = ensureConfigExists();
 		if (ensured.error && ctx) {
 			warnOnce(ctx, ensured.error);
@@ -132,7 +153,10 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		}
 	};
 
-	const setConfig = (next: RtkIntegrationConfig, ctx: ExtensionCommandContext): void => {
+	const setConfig = (
+		next: RtkIntegrationConfig,
+		ctx: ExtensionCommandContext,
+	): void => {
 		config = normalizeRtkIntegrationConfig(next);
 		const saved = saveRtkIntegrationConfig(config);
 		if (!saved.success && saved.error) {
@@ -173,7 +197,11 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 	};
 
 	const maybeWarnRtkMissing = (ctx: ExtensionContext): void => {
-		if (!config.enabled || config.mode !== "rewrite" || !config.guardWhenRtkMissing) {
+		if (
+			!config.enabled ||
+			config.mode !== "rewrite" ||
+			!config.guardWhenRtkMissing
+		) {
 			return;
 		}
 
@@ -187,8 +215,13 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		}
 
 		missingRtkWarningShown = true;
-		const reason = runtimeStatus.lastError ? ` (${runtimeStatus.lastError})` : "";
-		warnOnce(ctx, `${EXTENSION_NAME}: rtk binary unavailable, command rewrite bypassed${reason}.`);
+		const reason = runtimeStatus.lastError
+			? ` (${runtimeStatus.lastError})`
+			: "";
+		warnOnce(
+			ctx,
+			`${EXTENSION_NAME}: rtk binary unavailable, command rewrite bypassed${reason}.`,
+		);
 	};
 
 	const ensureRuntimeStatusFresh = async (): Promise<void> => {
@@ -197,7 +230,9 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		}
 
 		const now = Date.now();
-		const isStale = !runtimeStatus.lastCheckedAt || now - runtimeStatus.lastCheckedAt > 30_000;
+		const isStale =
+			!runtimeStatus.lastCheckedAt ||
+			now - runtimeStatus.lastCheckedAt > 30_000;
 		if (isStale) {
 			await refreshRuntimeStatus();
 		}
@@ -254,7 +289,9 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 		}
 
 		if (config.mode === "rewrite") {
-			const compatibility = applyWindowsBashCompatibilityFixes(event.input.command);
+			const compatibility = applyWindowsBashCompatibilityFixes(
+				event.input.command,
+			);
 			if (compatibility.command !== event.input.command) {
 				event.input.command = compatibility.command;
 			}
@@ -272,9 +309,17 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 
 		if (config.mode === "rewrite") {
 			if (config.showRewriteNotifications && ctx.hasUI) {
-				ctx.ui.notify(formatRewriteNotice(decision.originalCommand, decision.rewrittenCommand), "info");
+				ctx.ui.notify(
+					formatRewriteNotice(
+						decision.originalCommand,
+						decision.rewrittenCommand,
+					),
+					"info",
+				);
 			}
-			event.input.command = applyRewrittenCommandShellSafetyFixups(decision.rewrittenCommand);
+			event.input.command = applyRewrittenCommandShellSafetyFixups(
+				decision.rewrittenCommand,
+			);
 			return {};
 		}
 
@@ -309,11 +354,16 @@ export default function rtkIntegrationExtension(pi: ExtensionAPI): void {
 
 			return {
 				content: outcome.content,
-				details: outcome.metadata ? mergeCompactionDetails(event.details, outcome.metadata) : undefined,
+				details: outcome.metadata
+					? mergeCompactionDetails(event.details, outcome.metadata)
+					: undefined,
 			};
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			warnOnce(ctx, `${EXTENSION_NAME}: output compaction failed, using raw output (${trimMessage(message)}).`);
+			warnOnce(
+				ctx,
+				`${EXTENSION_NAME}: output compaction failed, using raw output (${trimMessage(message)}).`,
+			);
 			return {};
 		}
 	});
